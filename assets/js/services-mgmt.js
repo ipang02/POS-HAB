@@ -212,6 +212,10 @@ const ServicesMgmt = {
 
     const bookingPriceRaw = parseFloat(document.getElementById('svc-booking-price').value);
     const bookingPrice    = isNaN(bookingPriceRaw) ? null : bookingPriceRaw;
+    if (bookingPrice !== null && bookingPrice < 0) {
+      showToast('Booking price cannot be negative', 'error');
+      return;
+    }
 
     const tierEnabled = document.getElementById('svc-tier-enabled').checked;
     let tierPrices = null;
@@ -219,8 +223,8 @@ const ServicesMgmt = {
       const j = parseFloat(document.getElementById('svc-tier-junior').value);
       const s = parseFloat(document.getElementById('svc-tier-senior').value);
       const m = parseFloat(document.getElementById('svc-tier-master').value);
-      if (isNaN(j) || isNaN(s) || isNaN(m)) {
-        showToast('Enter all three tier prices (Junior, Senior, Master)', 'error');
+      if (isNaN(j) || isNaN(s) || isNaN(m) || j < 0 || s < 0 || m < 0) {
+        showToast('Enter all three tier prices (Junior, Senior, Master) — values must be 0 or above', 'error');
         return;
       }
       tierPrices = { junior: j, senior: s, master: m };
