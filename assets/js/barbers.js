@@ -103,6 +103,13 @@ const Barbers = {
           ${!(b.skills || []).length ? '<span class="text-[10px] text-white/25">No skills listed</span>' : ''}
         </div>
 
+        ${b.tier ? `<div class="mb-3">
+          <span class="text-[10px] font-semibold px-2.5 py-1 rounded-full
+            ${b.tier === 'master' ? 'text-amber-400 bg-amber-400/10' : b.tier === 'senior' ? 'text-blue-400 bg-blue-400/10' : 'text-green-400 bg-green-400/10'}">
+            <i class="fa-solid fa-layer-group mr-1 text-[9px]"></i>${b.tier.charAt(0).toUpperCase() + b.tier.slice(1)}
+          </span>
+        </div>` : ''}
+
         <!-- Stats -->
         <div class="grid grid-cols-3 gap-2 border-t border-white/6 pt-4">
           <div class="text-center">
@@ -179,6 +186,7 @@ const BarbersCRUD = {
     document.getElementById('barber-phone').value      = '';
     document.getElementById('barber-commission').value = '30';
     document.getElementById('barber-status').value     = 'available';
+    document.getElementById('barber-tier').value       = '';
     document.getElementById('barber-skill-input').value = '';
     this._renderSkillTags();
     this._renderColorSwatches();
@@ -200,6 +208,7 @@ const BarbersCRUD = {
     document.getElementById('barber-phone').value      = b.phone || '';
     document.getElementById('barber-commission').value = b.commission;
     document.getElementById('barber-status').value     = b.status;
+    document.getElementById('barber-tier').value       = b.tier || '';
     document.getElementById('barber-skill-input').value = '';
     this._renderSkillTags();
     this._renderColorSwatches();
@@ -287,6 +296,7 @@ const BarbersCRUD = {
     const phone      = document.getElementById('barber-phone').value.trim();
     const commission = parseInt(document.getElementById('barber-commission').value) || 30;
     const status     = document.getElementById('barber-status').value;
+    const tier       = document.getElementById('barber-tier').value || null;
 
     if (!name) { showToast('Barber name is required', 'error'); return; }
     if (commission < 0 || commission > 100) { showToast('Commission must be between 0–100%', 'error'); return; }
@@ -299,7 +309,7 @@ const BarbersCRUD = {
       if (idx > -1) {
         AppData.barbers[idx] = {
           ...AppData.barbers[idx],
-          name, phone, commission, status,
+          name, phone, commission, status, tier,
           initials, color: this._color,
           skills: [...this._skills]
         };
@@ -308,7 +318,7 @@ const BarbersCRUD = {
     } else {
       AppData.barbers.push({
         id:         nextNumId(AppData.barbers),
-        name, phone, commission, status,
+        name, phone, commission, status, tier,
         initials,   color: this._color,
         skills:     [...this._skills],
         branchId:   App.currentBranch || 1

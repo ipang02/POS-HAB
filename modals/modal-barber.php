@@ -62,6 +62,18 @@
           </div>
         </div>
 
+        <!-- Tier -->
+        <div>
+          <label class="text-xs text-white/45 mb-1.5 block font-medium">Tier</label>
+          <select id="barber-tier" class="sel">
+            <option value="">No tier (flat pricing applies)</option>
+            <option value="junior">Junior</option>
+            <option value="senior">Senior</option>
+            <option value="master">Master</option>
+          </select>
+          <p class="text-[10px] text-white/30 mt-1">Determines which tier price applies when this barber is selected in POS</p>
+        </div>
+
         <!-- Skills -->
         <div>
           <label class="text-xs text-white/45 mb-1.5 block font-medium">Skills / Specialties</label>
