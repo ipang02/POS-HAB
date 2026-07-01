@@ -144,6 +144,12 @@ const Appointments = {
           </td>
           <td class="py-2.5 text-right">
             <div class="flex items-center justify-end gap-1.5">
+              ${(a.status === 'confirmed' || a.status === 'completed') ? `
+              <button onclick="Appointments.processPayment(${a.id})"
+                class="btn-gold h-7 px-2.5 rounded-lg flex items-center gap-1 text-xs font-semibold" title="Process payment">
+                <i class="fa-solid fa-cash-register text-[10px]"></i>
+                <span class="hidden sm:inline">Pay</span>
+              </button>` : ''}
               <button onclick="Appointments.openDetail(${a.id})" class="btn-ghost w-7 h-7 rounded-lg flex items-center justify-center text-xs">
                 <i class="fa-solid fa-eye"></i>
               </button>
@@ -171,6 +177,7 @@ const Appointments = {
     document.getElementById('appt-notes').value    = '';
     document.getElementById('appt-duration-info').classList.add('hidden');
     openModal('modal-appt');
+    this.updateEffectivePrice();
   },
 
   editById(id) {
@@ -188,6 +195,7 @@ const Appointments = {
     document.getElementById('appt-status').value   = a.status;
     document.getElementById('appt-notes').value    = a.notes || '';
     this.updateDuration();
+    this.updateEffectivePrice();
     openModal('modal-appt');
   },
 
@@ -202,6 +210,19 @@ const Appointments = {
     } else if (infoEl) {
       infoEl.classList.add('hidden');
     }
+  },
+
+  updateEffectivePrice() {
+    const svcId  = parseInt(document.getElementById('appt-service')?.value);
+    const barbId = parseInt(document.getElementById('appt-barber')?.value);
+    const svc    = getServiceById(svcId);
+    const barb   = getBarberById(barbId);
+    const priceEl = document.getElementById('appt-effective-price');
+    const valEl   = document.getElementById('appt-effective-price-val');
+    if (!priceEl || !valEl) return;
+    if (!svc) { priceEl.classList.add('hidden'); return; }
+    valEl.textContent = formatRp(resolveBookingPrice(svc, barb));
+    priceEl.classList.remove('hidden');
   },
 
   save() {
@@ -219,12 +240,17 @@ const Appointments = {
 
     const editId = parseInt(document.getElementById('appt-edit-id').value);
 
+    const svc  = getServiceById(serviceId);
+    const barb = getBarberById(barberId);
+    const bookedPrice = svc ? resolveBookingPrice(svc, barb) : 0;
+
     if (editId) {
       const idx = AppData.appointments.findIndex(a => a.id === editId);
       if (idx > -1) {
         AppData.appointments[idx] = { ...AppData.appointments[idx], customer, serviceId, barberId, date, time, status,
           phone: document.getElementById('appt-phone').value,
-          notes: document.getElementById('appt-notes').value };
+          notes: document.getElementById('appt-notes').value,
+          bookedPrice };
         showToast('Appointment updated', 'success');
       }
     } else {
@@ -232,7 +258,8 @@ const Appointments = {
         id: nextNumId(AppData.appointments), customer, serviceId, barberId, date, time, status,
         phone: document.getElementById('appt-phone').value,
         notes: document.getElementById('appt-notes').value,
-        branchId: App.currentBranch || 1
+        branchId: App.currentBranch || 1,
+        bookedPrice
       });
       showToast('Appointment booked!', 'success');
     }
@@ -272,9 +299,15 @@ const Appointments = {
         <div class="flex justify-between text-sm"><span class="text-white/45">Time</span><span class="text-white font-semibold">${formatTime12(a.time)}</span></div>
         <div class="flex justify-between text-sm"><span class="text-white/45">Status</span><span class="badge badge-${a.status}">${statusLabel(a.status)}</span></div>
         ${a.notes ? `<div class="flex justify-between text-sm"><span class="text-white/45">Notes</span><span class="text-white/70 text-right max-w-[180px]">${a.notes}</span></div>` : ''}
-        ${service ? `<div class="flex justify-between text-sm"><span class="text-white/45">Price</span><span class="gold-text font-bold">${formatRp(service.price)}</span></div>` : ''}
+        ${service ? `<div class="flex justify-between text-sm"><span class="text-white/45">Price</span><span class="gold-text font-bold">${formatRp(a.bookedPrice ?? service.price)}</span></div>` : ''}
       </div>`;
     openModal('modal-appt-detail');
+    const payBtn = document.getElementById('appt-detail-pay-btn');
+    if (payBtn) {
+      const canPay = a.status === 'confirmed' || a.status === 'completed';
+      payBtn.classList.toggle('hidden', !canPay);
+      payBtn.onclick = () => Appointments.processPayment(a.id);
+    }
   },
 
   changeStatus(status) {
@@ -302,5 +335,16 @@ const Appointments = {
       this.renderList();
       showToast('Appointment deleted', 'warning');
     });
+  },
+
+  processPayment(id) {
+    const a = AppData.appointments.find(x => x.id === id);
+    if (!a) return;
+    const svc  = getServiceById(a.serviceId);
+    const barb = getBarberById(a.barberId);
+    const price = a.bookedPrice ?? (svc ? resolveBookingPrice(svc, barb) : 0);
+    closeModal('modal-appt-detail');
+    POS.prefill({ barberId: a.barberId, serviceId: a.serviceId, price, customer: a.customer });
+    navigate('pos');
   }
 };

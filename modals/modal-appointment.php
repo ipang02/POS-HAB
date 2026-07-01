@@ -34,17 +34,21 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="text-xs text-white/45 mb-1.5 block font-medium">Service <span class="text-red-400">*</span></label>
-            <select id="appt-service" class="sel" onchange="Appointments.updateDuration()">
+            <select id="appt-service" class="sel" onchange="Appointments.updateDuration(); Appointments.updateEffectivePrice()">
               <option value="">Select service</option>
             </select>
           </div>
           <div>
             <label class="text-xs text-white/45 mb-1.5 block font-medium">Barber <span class="text-red-400">*</span></label>
-            <select id="appt-barber" class="sel">
+            <select id="appt-barber" class="sel" onchange="Appointments.updateEffectivePrice()">
               <option value="">Select barber</option>
             </select>
           </div>
         </div>
+        <p id="appt-effective-price" class="hidden text-xs font-semibold mt-1" style="color:#C9A84C">
+          <i class="fa-solid fa-tag mr-1 text-[10px]"></i>
+          <span id="appt-effective-price-val">RM 0</span>
+        </p>
 
         <!-- Date & Time -->
         <div class="grid grid-cols-2 gap-3">
@@ -155,6 +159,10 @@
           </button>
         </div>
       </div>
+
+      <button id="appt-detail-pay-btn" class="btn-gold w-full py-2.5 rounded-xl text-sm font-bold mb-2 hidden">
+        <i class="fa-solid fa-cash-register mr-1.5"></i> Process Payment
+      </button>
 
       <div class="flex gap-2 mt-4">
         <button onclick="Appointments.editFromDetail()" class="btn-outline flex-1 py-2.5 rounded-xl text-sm font-semibold">
