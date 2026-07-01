@@ -53,16 +53,16 @@
 <div id="print-receipt"></div>
 
 <!-- ══ Scripts (order matters) ════════════════════════════════ -->
-<script src="assets/js/app.js"></script>
-<script src="assets/js/customers.js"></script>
-<script src="assets/js/services-mgmt.js"></script>
-<script src="assets/js/dashboard.js"></script>
-<script src="assets/js/pos.js"></script>
-<script src="assets/js/appointments.js"></script>
-<script src="assets/js/barbers.js"></script>
-<script src="assets/js/analytics.js"></script>
-<script src="assets/js/inventory.js"></script>
-<script src="assets/js/settings.js"></script>
+<script src="assets/js/app.js?v=<?= filemtime('assets/js/app.js') ?>"></script>
+<script src="assets/js/customers.js?v=<?= filemtime('assets/js/customers.js') ?>"></script>
+<script src="assets/js/services-mgmt.js?v=<?= filemtime('assets/js/services-mgmt.js') ?>"></script>
+<script src="assets/js/dashboard.js?v=<?= filemtime('assets/js/dashboard.js') ?>"></script>
+<script src="assets/js/pos.js?v=<?= filemtime('assets/js/pos.js') ?>"></script>
+<script src="assets/js/appointments.js?v=<?= filemtime('assets/js/appointments.js') ?>"></script>
+<script src="assets/js/barbers.js?v=<?= filemtime('assets/js/barbers.js') ?>"></script>
+<script src="assets/js/analytics.js?v=<?= filemtime('assets/js/analytics.js') ?>"></script>
+<script src="assets/js/inventory.js?v=<?= filemtime('assets/js/inventory.js') ?>"></script>
+<script src="assets/js/settings.js?v=<?= filemtime('assets/js/settings.js') ?>"></script>
 
 </body>
 </html>
