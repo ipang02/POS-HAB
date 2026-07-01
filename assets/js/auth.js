@@ -1,6 +1,7 @@
 const Auth = {
   _role: null,
   _entered: '',
+  _submitting: false,
 
   init() {
     this._role = sessionStorage.getItem('hab_role');
@@ -27,10 +28,12 @@ const Auth = {
   },
 
   digit(d) {
+    if (this._submitting) return;
     if (this._entered.length >= 4) return;
     this._entered += String(d);
     this._updateDots();
     if (this._entered.length === 4) {
+      this._submitting = true;
       setTimeout(() => this._submit(), 120);
     }
   },
@@ -48,6 +51,7 @@ const Auth = {
   },
 
   _submit() {
+    this._submitting = false;
     const pins = AppData?.settings?.pins || { owner: '1234', staff: '0000' };
     if (this._entered === pins.owner) {
       this._setRole('owner');
@@ -66,6 +70,8 @@ const Auth = {
       statusEl.textContent = role === 'owner' ? 'Owner' : 'Staff';
       statusEl.classList.remove('hidden');
     }
+    this._entered = '';
+    this._updateDots();
     setTimeout(() => {
       this._hidePinScreen();
       this.applyRole();
@@ -75,7 +81,7 @@ const Auth = {
   _shake() {
     const screen = document.getElementById('pin-screen');
     const card = screen?.querySelector('.pin-card');
-    if (!card) { this._reset(); return; }
+    if (!card) { console.warn('Auth: .pin-card not found in #pin-screen'); this._reset(); return; }
     card.classList.add('pin-shake');
     const err = document.getElementById('pin-error');
     if (err) err.classList.remove('hidden');
