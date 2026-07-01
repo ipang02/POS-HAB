@@ -163,7 +163,8 @@ const Inventory = {
     const stock    = parseInt(document.getElementById('inv-stock').value) || 0;
     const minStock = parseInt(document.getElementById('inv-min-stock').value) || 5;
     const price    = parseInt(document.getElementById('inv-price').value) || 0;
-    const commissionRM = parseFloat(document.getElementById('inv-commission').value) || null;
+    const commissionRaw = parseFloat(document.getElementById('inv-commission').value);
+    const commissionRM = isNaN(commissionRaw) ? null : commissionRaw;
 
     if (!name) { showToast('Product name is required', 'error'); return; }
 
