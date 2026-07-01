@@ -129,3 +129,19 @@ SET FOREIGN_KEY_CHECKS = 1;
 --   + Existing inventory 1-6 → Kota Bharu
 --   + Existing inventory 7-12 → Gua Musang
 -- ============================================================
+
+-- ── v3: Customer Management ───────────────────────────────────
+ALTER TABLE `transactions`
+  ADD COLUMN IF NOT EXISTS `customer_phone` VARCHAR(20) DEFAULT NULL AFTER `customer`,
+  ADD KEY IF NOT EXISTS `idx_trx_customer_phone` (`customer_phone`);
+
+CREATE TABLE IF NOT EXISTS `customers` (
+  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name`       VARCHAR(100) NOT NULL,
+  `phone`      VARCHAR(20)  NOT NULL,
+  `notes`      TEXT DEFAULT NULL,
+  `points`     INT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_customer_phone` (`phone`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
