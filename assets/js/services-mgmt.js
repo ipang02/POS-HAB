@@ -30,7 +30,7 @@ const ServicesMgmt = {
     const empty = document.getElementById('svc-mgmt-empty');
     if (!grid) return;
 
-    const services = AppData.services.filter(s => {
+    const services = branchServices().filter(s => {
       const matchQ   = !this.searchQ || s.name.toLowerCase().includes(this.searchQ) || (s.desc || '').toLowerCase().includes(this.searchQ);
       const matchCat = this.catFilter === 'all' || s.cat === this.catFilter;
       const isActive = s.is_active !== false;
@@ -109,8 +109,9 @@ const ServicesMgmt = {
   _renderSummary() {
     const el = document.getElementById('svc-mgmt-summary');
     if (!el) return;
-    const total  = AppData.services.length;
-    const active = AppData.services.filter(s => s.is_active !== false).length;
+    const bs     = branchServices();
+    const total  = bs.length;
+    const active = bs.filter(s => s.is_active !== false).length;
     el.textContent = `${total} services · ${active} visible in POS · ${total - active} hidden`;
   },
 
@@ -243,7 +244,7 @@ const ServicesMgmt = {
         showToast(`"${name}" updated successfully`, 'success');
       }
     } else {
-      AppData.services.push({ id: nextNumId(AppData.services), name, price, duration, cat, icon, desc, is_active: isActive, tierPrices, bookingPrice });
+      AppData.services.push({ id: nextNumId(AppData.services), name, price, duration, cat, icon, desc, is_active: isActive, tierPrices, bookingPrice, branchId: App.currentBranch });
       showToast(`"${name}" added to services`, 'success');
     }
 
