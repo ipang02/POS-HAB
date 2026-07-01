@@ -68,6 +68,9 @@ const Inventory = {
             <div class="stock-fill" style="width:${pct}%;background:${barColor}"></div>
           </div>
         </div>
+        ${item.commissionRM ? `<p class="text-[10px] text-green-400 mt-2">
+          <i class="fa-solid fa-hand-holding-dollar mr-1"></i>RM ${item.commissionRM} commission/unit
+        </p>` : ''}
         <!-- Actions -->
         <div class="flex gap-2 mt-4">
           <button onclick="Inventory.restock(${item.id})" class="btn-gold flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1">
@@ -134,6 +137,7 @@ const Inventory = {
     document.getElementById('inv-stock').value  = '0';
     document.getElementById('inv-min-stock').value = '5';
     document.getElementById('inv-price').value  = '';
+    document.getElementById('inv-commission').value = '';
     openModal('modal-inv');
   },
 
@@ -148,6 +152,7 @@ const Inventory = {
     document.getElementById('inv-stock').value     = item.stock;
     document.getElementById('inv-min-stock').value = item.minStock;
     document.getElementById('inv-price').value     = item.price;
+    document.getElementById('inv-commission').value = item.commissionRM ?? '';
     openModal('modal-inv');
   },
 
@@ -158,16 +163,17 @@ const Inventory = {
     const stock    = parseInt(document.getElementById('inv-stock').value) || 0;
     const minStock = parseInt(document.getElementById('inv-min-stock').value) || 5;
     const price    = parseInt(document.getElementById('inv-price').value) || 0;
+    const commissionRM = parseFloat(document.getElementById('inv-commission').value) || null;
 
     if (!name) { showToast('Product name is required', 'error'); return; }
 
     const editId = parseInt(document.getElementById('inv-edit-id').value);
     if (editId) {
       const idx = AppData.inventory.findIndex(i => i.id === editId);
-      if (idx > -1) Object.assign(AppData.inventory[idx], { name, cat, unit, stock, minStock, price });
+      if (idx > -1) Object.assign(AppData.inventory[idx], { name, cat, unit, stock, minStock, price, commissionRM });
       showToast('Product updated', 'success');
     } else {
-      AppData.inventory.push({ id: nextNumId(AppData.inventory), name, cat, unit, stock, minStock, price, branchId: App.currentBranch || 1 });
+      AppData.inventory.push({ id: nextNumId(AppData.inventory), name, cat, unit, stock, minStock, price, commissionRM, branchId: App.currentBranch || 1 });
       showToast('Product added!', 'success');
     }
 
