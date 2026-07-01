@@ -30,6 +30,7 @@
     <?php include 'views/analytics.php'; ?>
     <?php include 'views/inventory.php'; ?>
     <?php include 'views/settings.php'; ?>
+    <?php include 'views/customers.php'; ?>
   </main>
 
 </div><!-- /main-wrap -->
@@ -42,6 +43,7 @@
 <?php include 'modals/modal-receipt.php'; ?>
 <?php include 'modals/modal-appointment.php'; ?>
 <?php include 'modals/modal-shift.php'; ?>
+<?php include 'modals/modal-customer.php'; ?>
 <?php include 'modals/modal-confirm.php'; ?>
 
 <!-- Toast Container -->
@@ -52,6 +54,7 @@
 
 <!-- ══ Scripts (order matters) ════════════════════════════════ -->
 <script src="assets/js/app.js"></script>
+<script src="assets/js/customers.js"></script>
 <script src="assets/js/services-mgmt.js"></script>
 <script src="assets/js/dashboard.js"></script>
 <script src="assets/js/pos.js"></script>
