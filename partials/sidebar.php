@@ -36,11 +36,9 @@
       <span class="badge-lbl lbl ml-auto bg-gold/15 text-gold text-[10px] px-2 py-0.5 rounded-full font-semibold" id="nav-appt-badge">3</span>
     </a>
 
-    <!-- Customers — COMING SOON -->
-    <a class="nav-item disabled" data-tip="Coming Soon" onclick="showToast('Customer Management — Coming Soon! Stay tuned.','info')">
+    <a class="nav-item" data-view="customers" data-tip="Customers" onclick="navigate('customers')">
       <i class="fa-solid fa-users nav-icon"></i>
       <span class="lbl">Customers</span>
-      <span class="badge-lbl lbl ml-auto text-gold/55 text-[10px] px-2 py-0.5 rounded-full font-semibold glass-gold">Soon</span>
     </a>
 
     <p class="nav-section-label px-3 pt-3 pb-2 text-[10px] font-bold tracking-[.14em] uppercase text-white/20">Management</p>
