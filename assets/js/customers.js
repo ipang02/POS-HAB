@@ -112,18 +112,18 @@ const Customers = {
 
     const editId    = parseInt(document.getElementById('cust-edit-id').value) || 0;
     const duplicate = AppData.customers.find(c => c.phone === phone && c.id !== editId);
-    if (duplicate) { showToast(`Phone already registered to "${duplicate.name}"`, 'error'); return; }
+    if (duplicate) { showToast(`Phone already registered to "${escHtml(duplicate.name)}"`, 'error'); return; }
 
     if (editId) {
       const idx = AppData.customers.findIndex(c => c.id === editId);
       if (idx === -1) { showToast('Customer not found', 'error'); return; }
       AppData.customers[idx] = { ...AppData.customers[idx], name, phone, notes };
-      showToast(`"${name}" updated`, 'success');
+      showToast(`"${escHtml(name)}" updated`, 'success');
     } else {
       AppData.customers.push({
         id: nextNumId(AppData.customers), name, phone, notes, points: 0, createdAt: today()
       });
-      showToast(`"${name}" added!`, 'success');
+      showToast(`"${escHtml(name)}" added!`, 'success');
     }
 
     AppData.save('customers');
@@ -145,7 +145,7 @@ const Customers = {
         closeModal('modal-customer-detail');
         this.render();
         this._updateSummary();
-        showToast(`"${c.name}" removed`, 'warning');
+        showToast(`"${escHtml(c.name)}" removed`, 'warning');
       },
       'Remove'
     );
