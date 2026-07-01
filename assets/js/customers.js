@@ -8,6 +8,10 @@ const CUSTOMER_COLORS = [
   '#06b6d4','#84cc16','#ef4444','#a78bfa'
 ];
 
+function escHtml(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 const Customers = {
   _activeTier: 'all',
 
@@ -112,10 +116,9 @@ const Customers = {
 
     if (editId) {
       const idx = AppData.customers.findIndex(c => c.id === editId);
-      if (idx > -1) {
-        AppData.customers[idx] = { ...AppData.customers[idx], name, phone, notes };
-        showToast(`"${name}" updated`, 'success');
-      }
+      if (idx === -1) { showToast('Customer not found', 'error'); return; }
+      AppData.customers[idx] = { ...AppData.customers[idx], name, phone, notes };
+      showToast(`"${name}" updated`, 'success');
     } else {
       AppData.customers.push({
         id: nextNumId(AppData.customers), name, phone, notes, points: 0, createdAt: today()
@@ -228,12 +231,12 @@ const Customers = {
         <div class="flex items-start justify-between mb-4">
           <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-lg select-none"
             style="background:linear-gradient(135deg,${color}55,${color}33);border:2px solid ${color}55">
-            ${initials}
+            ${escHtml(initials)}
           </div>
           <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full ${tierCls}">${tierLabel}</span>
         </div>
-        <h3 class="text-sm font-bold text-white mb-0.5">${c.name}</h3>
-        <p class="text-xs text-white/40 mb-4">${c.phone}</p>
+        <h3 class="text-sm font-bold text-white mb-0.5">${escHtml(c.name)}</h3>
+        <p class="text-xs text-white/40 mb-4">${escHtml(c.phone)}</p>
         <div class="grid grid-cols-3 gap-2 border-t border-white/6 pt-4">
           <div class="text-center">
             <div class="text-base font-bold text-white">${visits}</div>
@@ -250,7 +253,7 @@ const Customers = {
         </div>
         ${c.points > 0 ? `<div class="mt-3 flex items-center gap-1.5 glass-gold rounded-xl px-3 py-1.5">
           <i class="fa-solid fa-star text-gold text-[10px]"></i>
-          <span class="text-xs font-semibold text-gold">${c.points} pts</span>
+          <span class="text-xs font-semibold text-gold">${escHtml(c.points)} pts</span>
         </div>` : ''}
       </div>`;
   },
@@ -294,8 +297,8 @@ const Customers = {
                   <i class="fa-solid fa-receipt text-gold text-[10px]"></i>
                 </div>
                 <div class="min-w-0">
-                  <p class="text-xs font-semibold text-white truncate">${names || 'Transaction'}</p>
-                  <p class="text-[10px] text-white/35">${formatDate(h.date)} · ${methodLabel(h.method)}</p>
+                  <p class="text-xs font-semibold text-white truncate">${escHtml(names) || 'Transaction'}</p>
+                  <p class="text-[10px] text-white/35">${escHtml(formatDate(h.date))} · ${escHtml(methodLabel(h.method))}</p>
                 </div>
               </div>
               <span class="text-xs font-bold text-white flex-shrink-0">${formatRp(h.total)}</span>
@@ -308,13 +311,13 @@ const Customers = {
                 <i class="fa-solid fa-calendar text-blue-400 text-[10px]"></i>
               </div>
               <div class="min-w-0">
-                <p class="text-xs font-semibold text-white truncate">${svc?.name || 'Appointment'}</p>
-                <p class="text-[10px] text-white/35">${formatDate(h.date)} ${h.time}</p>
+                <p class="text-xs font-semibold text-white truncate">${escHtml(svc?.name) || 'Appointment'}</p>
+                <p class="text-[10px] text-white/35">${escHtml(formatDate(h.date))} ${escHtml(h.time)}</p>
               </div>
             </div>
             <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full
               ${h.status==='completed'?'text-green-400 bg-green-400/10':h.status==='confirmed'?'text-blue-400 bg-blue-400/10':'text-amber-400 bg-amber-400/10'}">
-              ${statusLabel(h.status)}
+              ${escHtml(statusLabel(h.status))}
             </span>
           </div>`;
         }).join('');
