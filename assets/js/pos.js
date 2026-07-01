@@ -88,7 +88,7 @@ const POS = {
     const grid = document.getElementById('service-grid');
     if (!grid) return;
     const q = this.searchQuery.toLowerCase();
-    const filtered = AppData.services.filter(s =>
+    const filtered = branchServices().filter(s =>
       s.is_active !== false &&
       (this.currentCat === 'all' || s.cat === this.currentCat) &&
       (!q || s.name.toLowerCase().includes(q) || (s.desc || '').toLowerCase().includes(q))
