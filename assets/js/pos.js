@@ -9,6 +9,23 @@ const POS = {
   searchQuery: '',
   activePanel: 'services',   // 'services' | 'products'
   payMethod: 'cash',
+  _prefillCustomer: '',
+
+  _getSelectedBarber() {
+    const id = parseInt(document.getElementById('pos-barber')?.value) || 0;
+    return id ? getBarberById(id) : null;
+  },
+
+  _recalcCartPrices() {
+    const barber = this._getSelectedBarber();
+    this.cart.forEach(item => {
+      if (item.type !== 'service') return;
+      const svc = getServiceById(item.id);
+      if (svc) item.price = resolvePrice(svc, barber);
+    });
+    this.renderCart();
+    this.recalc();
+  },
 
   init() {
     this.renderBarberSelect();
@@ -18,6 +35,7 @@ const POS = {
     this.updateTaxDisplay();
     // reset to services tab on init
     this.switchPanel('services', document.getElementById('pos-tab-services'));
+    document.getElementById('pos-barber')?.addEventListener('change', () => this._recalcCartPrices());
   },
 
   // ── Panel Switch (Services / Products) ─────────────────────
@@ -147,7 +165,7 @@ const POS = {
       const key = 'svc_' + id;
       const existing = this.cart.find(c => c.key === key);
       if (existing) { existing.qty++; }
-      else { this.cart.push({ key, type:'service', id, name: svc.name, price: svc.price, qty: 1 }); }
+      else { this.cart.push({ key, type:'service', id, name: svc.name, price: resolvePrice(svc, this._getSelectedBarber()), qty: 1 }); }
       showToast(`${svc.name} added`, 'success', 1400);
     } else {
       const item = AppData.inventory.find(i => i.id === id);
@@ -159,7 +177,7 @@ const POS = {
         if (existing.qty >= maxQty) { showToast(`Only ${maxQty} ${item.unit} in stock`, 'warning'); return; }
         existing.qty++;
       } else {
-        this.cart.push({ key, type:'product', id, name: item.name, price: item.price, qty: 1, stock: item.stock });
+        this.cart.push({ key, type:'product', id, name: item.name, price: item.price, qty: 1, stock: item.stock, commissionRM: item.commissionRM || null });
       }
       showToast(`${item.name} added`, 'success', 1400);
     }
@@ -291,7 +309,8 @@ const POS = {
     document.getElementById('pay-total').textContent     = formatRp(total);
     document.getElementById('cash-tendered').value       = '';
     document.getElementById('cash-change').textContent   = formatRp(0);
-    document.getElementById('pay-customer-name').value  = '';
+    document.getElementById('pay-customer-name').value  = this._prefillCustomer || '';
+    this._prefillCustomer = '';
     document.getElementById('pay-customer-phone').value = '';
     document.getElementById('card-last4').value          = '';
 
@@ -361,7 +380,10 @@ const POS = {
       customer,
       barberId,
       branchId: App.currentBranch || 1,
-      services: this.cart.map(c => ({ name: c.name, qty: c.qty, price: c.price, type: c.type })),
+      services: this.cart.map(c => ({
+        name: c.name, qty: c.qty, price: c.price, type: c.type,
+        ...(c.type === 'product' && c.commissionRM ? { commissionRM: c.commissionRM } : {})
+      })),
       discount: discPct,
       tax:      AppData.settings.taxRate || 6,
       total,
@@ -459,5 +481,25 @@ const POS = {
     this.clearCart();
     document.getElementById('pos-barber').value = '';
     showToast('Ready for new order', 'info', 2000);
+  },
+
+  prefill({ barberId, serviceId, price, customer }) {
+    this.newOrder();
+    const svc = getServiceById(serviceId);
+    if (!svc) return;
+    this.cart.push({
+      key: 'svc_' + serviceId,
+      type: 'service',
+      id: serviceId,
+      name: svc.name,
+      price: price ?? resolvePrice(svc, getBarberById(barberId)),
+      qty: 1
+    });
+    const sel = document.getElementById('pos-barber');
+    if (sel && barberId) sel.value = barberId;
+    this._prefillCustomer = customer || '';
+    this._refreshGrids();
+    this.renderCart();
+    this.recalc();
   }
 };
