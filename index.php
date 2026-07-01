@@ -11,6 +11,8 @@
 <?php include 'partials/head.php'; ?>
 <body>
 
+<?php include 'views/pin-screen.php'; ?>
+
 <!-- Mobile sidebar backdrop -->
 <div id="mob-overlay" onclick="closeMobileSidebar()"></div>
 
@@ -54,6 +56,7 @@
 
 <!-- ══ Scripts (order matters) ════════════════════════════════ -->
 <script src="assets/js/app.js?v=<?= filemtime('assets/js/app.js') ?>"></script>
+<script src="assets/js/auth.js?v=<?= filemtime('assets/js/auth.js') ?>"></script>
 <script src="assets/js/customers.js?v=<?= filemtime('assets/js/customers.js') ?>"></script>
 <script src="assets/js/services-mgmt.js?v=<?= filemtime('assets/js/services-mgmt.js') ?>"></script>
 <script src="assets/js/dashboard.js?v=<?= filemtime('assets/js/dashboard.js') ?>"></script>

@@ -107,7 +107,19 @@ const DEFAULT_DATA = {
     receiptShowQr:  true,
     receiptShowTax: true,
     theme:         'dark',
-    notifications: { booking:true, stock:true, payment:true, daily:false }
+    notifications: { booking:true, stock:true, payment:true, daily:false },
+    pins: {
+      owner: '1234',
+      staff: '0000'
+    },
+    staffAccess: {
+      analytics:  false,
+      services:   false,
+      barbers:    false,
+      inventory:  false,
+      settings:   false,
+      customers:  true
+    }
   }
 };
 
@@ -307,6 +319,10 @@ const Router = {
 
   go(view) {
     if (!this.pages[view]) return;
+    if (typeof Auth !== 'undefined' && !Auth.canAccess(view)) {
+      showToast('Access restricted', 'error');
+      return;
+    }
     // update views
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     const target = document.getElementById('view-' + view);
@@ -450,6 +466,7 @@ const App = {
   },
 
   init() {
+    Auth.init();
     this.currentBranch = StorageManager.load('currentBranch', 1);
     startClock();
     _updateBranchLabel();
