@@ -546,8 +546,8 @@ tr.hover\:bg-white\/2:hover { background: #F8F8F6 !important; }
   animation: pin-shake 0.5s ease;
 }
 .pin-btn:hover {
-  background: rgba(255,255,255,0.10) !important;
-  border-color: rgba(255,255,255,0.14) !important;
+  background: #F3F4F6 !important;
+  border-color: #D1D5DB !important;
 }
 
 /* Nav hidden by auth */
