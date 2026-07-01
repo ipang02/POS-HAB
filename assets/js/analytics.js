@@ -286,8 +286,8 @@ const Analytics = {
         <td class="py-2.5 pr-4">
           <div class="flex items-center gap-2">
             <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-              style="background:${b?.color || '#374151'}33;border:1px solid ${b?.color || '#374151'}44">${b?.initials || '?'}</div>
-            <span class="text-sm text-white">${b?.name || 'Unknown'}</span>
+              style="background:${b?.color || '#374151'}33;border:1px solid ${b?.color || '#374151'}44">${escHtml(b?.initials || '?')}</div>
+            <span class="text-sm text-white">${escHtml(b?.name || 'Unknown')}</span>
           </div>
         </td>
         <td class="py-2.5 pr-4 text-sm text-white/60">${d.sold} unit${d.sold !== 1 ? 's' : ''}</td>
