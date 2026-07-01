@@ -7,16 +7,16 @@
 const DEFAULT_DATA = {
 
   services: [
-    { id:1,  name:'Haircut',           price:20,  duration:45,  cat:'hair',      icon:'fa-scissors',           desc:'Classic & modern cuts',      is_active:true, tierPrices:null, bookingPrice:null },
-    { id:2,  name:'Beard Trim',        price:12,  duration:30,  cat:'beard',     icon:'fa-face-grin-beam',     desc:'Shape & clean your beard',   is_active:true, tierPrices:null, bookingPrice:null },
-    { id:3,  name:'Hair Wash',         price:8,   duration:20,  cat:'hair',      icon:'fa-shower',             desc:'Shampoo & conditioning',     is_active:true, tierPrices:null, bookingPrice:null },
-    { id:4,  name:'Hair Coloring',     price:80,  duration:90,  cat:'treatment', icon:'fa-palette',            desc:'Full color treatment',        is_active:true, tierPrices:null, bookingPrice:null },
-    { id:5,  name:'Kids Haircut',      price:15,  duration:30,  cat:'hair',      icon:'fa-child',              desc:'For kids under 12 yrs',      is_active:true, tierPrices:null, bookingPrice:null },
-    { id:6,  name:'Hot Towel Shave',   price:18,  duration:40,  cat:'beard',     icon:'fa-fire-flame-curved',  desc:'Traditional wet shave',      is_active:true, tierPrices:null, bookingPrice:null },
-    { id:7,  name:'Hair Treatment',    price:45,  duration:60,  cat:'treatment', icon:'fa-spa',                desc:'Keratin & deep repair',       is_active:true, tierPrices:null, bookingPrice:null },
-    { id:8,  name:'Full Package',      price:88,  duration:120, cat:'package',   icon:'fa-crown',              desc:'Haircut + Beard + Wash',     is_active:true, tierPrices:null, bookingPrice:null },
-    { id:9,  name:'Eyebrow Trim',      price:8,   duration:15,  cat:'beard',     icon:'fa-eye',                desc:'Define & shape brows',       is_active:true, tierPrices:null, bookingPrice:null },
-    { id:10, name:'Hair Styling',      price:15,  duration:30,  cat:'hair',      icon:'fa-wind',               desc:'Pomade finish & styling',    is_active:true, tierPrices:null, bookingPrice:null },
+    { id:1,  name:'Haircut',         price:20,  duration:45,  cat:'hair',      icon:'fa-scissors',           desc:'Classic & modern cuts',      is_active:true, tierPrices:null, bookingPrice:null, branchId:1 },
+    { id:2,  name:'Beard Trim',      price:12,  duration:30,  cat:'beard',     icon:'fa-face-grin-beam',     desc:'Shape & clean your beard',   is_active:true, tierPrices:null, bookingPrice:null, branchId:1 },
+    { id:3,  name:'Hair Wash',       price:8,   duration:20,  cat:'hair',      icon:'fa-shower',             desc:'Shampoo & conditioning',     is_active:true, tierPrices:null, bookingPrice:null, branchId:1 },
+    { id:4,  name:'Hair Coloring',   price:80,  duration:90,  cat:'treatment', icon:'fa-palette',            desc:'Full color treatment',        is_active:true, tierPrices:null, bookingPrice:null, branchId:1 },
+    { id:5,  name:'Kids Haircut',    price:15,  duration:30,  cat:'hair',      icon:'fa-child',              desc:'For kids under 12 yrs',      is_active:true, tierPrices:null, bookingPrice:null, branchId:1 },
+    { id:6,  name:'Full Package',    price:88,  duration:120, cat:'package',   icon:'fa-crown',              desc:'Haircut + Beard + Wash',     is_active:true, tierPrices:null, bookingPrice:null, branchId:1 },
+    { id:7,  name:'Hot Towel Shave', price:18,  duration:40,  cat:'beard',     icon:'fa-fire-flame-curved',  desc:'Traditional wet shave',      is_active:true, tierPrices:null, bookingPrice:null, branchId:2 },
+    { id:8,  name:'Hair Treatment',  price:45,  duration:60,  cat:'treatment', icon:'fa-spa',                desc:'Keratin & deep repair',       is_active:true, tierPrices:null, bookingPrice:null, branchId:2 },
+    { id:9,  name:'Eyebrow Trim',    price:8,   duration:15,  cat:'beard',     icon:'fa-eye',                desc:'Define & shape brows',       is_active:true, tierPrices:null, bookingPrice:null, branchId:2 },
+    { id:10, name:'Hair Styling',    price:15,  duration:30,  cat:'hair',      icon:'fa-wind',               desc:'Pomade finish & styling',    is_active:true, tierPrices:null, bookingPrice:null, branchId:2 },
   ],
 
   barbers: [
@@ -238,6 +238,7 @@ function branchBarbers(bid)      { const b = bid ?? App.currentBranch; return b 
 function branchTransactions(bid) { const b = bid ?? App.currentBranch; return b === 0 ? AppData.transactions  : AppData.transactions.filter(x => x.branchId === b); }
 function branchAppointments(bid) { const b = bid ?? App.currentBranch; return b === 0 ? AppData.appointments  : AppData.appointments.filter(x => x.branchId === b); }
 function branchInventory(bid)    { const b = bid ?? App.currentBranch; return b === 0 ? AppData.inventory     : AppData.inventory.filter(x => x.branchId === b); }
+function branchServices(bid)     { const b = bid ?? App.currentBranch; return b === 0 ? AppData.services     : AppData.services.filter(x => x.branchId === b); }
 
 function getBranchSettings(bid) {
   const b = bid ?? App.currentBranch;
@@ -468,6 +469,10 @@ const App = {
   init() {
     Auth.init();
     this.currentBranch = StorageManager.load('currentBranch', 1);
+    if (AppData.services.some(s => s.branchId == null)) {
+      AppData.services.forEach(s => { if (s.branchId == null) s.branchId = 1; });
+      AppData.save('services');
+    }
     startClock();
     _updateBranchLabel();
     _renderBranchDropdown();
