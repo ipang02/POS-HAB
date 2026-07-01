@@ -155,5 +155,72 @@
       </button>
     </div>
 
+    <!-- Security Section (rendered dynamically by settings.js) -->
+    <div id="settings-security-section" class="hidden mt-5">
+      <div class="glass rounded-2xl overflow-hidden mb-4">
+        <div class="px-5 py-4 border-b border-white/6">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-sm" style="color:#C9A84C"></i>
+            Security
+          </h3>
+          <p class="text-xs text-white/35 mt-0.5">PIN management and staff access control</p>
+        </div>
+        <div class="p-5 space-y-6">
+
+          <!-- PIN Change -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-xs font-semibold text-white/70 mb-1">Owner PIN</p>
+              <p class="text-xs text-white/35 mb-3">Current PIN: <span id="sec-owner-pin-display">••••</span></p>
+              <button onclick="Settings.changePIN('owner')" class="btn-outline text-xs px-3 py-2 rounded-lg">
+                <i class="fa-solid fa-pen mr-1.5 text-[10px]"></i>Change Owner PIN
+              </button>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-white/70 mb-1">Staff PIN</p>
+              <p class="text-xs text-white/35 mb-3">Current PIN: <span id="sec-staff-pin-display">••••</span></p>
+              <button onclick="Settings.changePIN('staff')" class="btn-outline text-xs px-3 py-2 rounded-lg">
+                <i class="fa-solid fa-pen mr-1.5 text-[10px]"></i>Change Staff PIN
+              </button>
+            </div>
+          </div>
+
+          <!-- Staff Module Access -->
+          <div>
+            <p class="text-xs font-semibold text-white/70 mb-3">Staff Module Access</p>
+            <p class="text-xs text-white/35 mb-4">Choose which modules staff can access. POS, Appointments, and Customers are always accessible.</p>
+            <div class="space-y-3" id="sec-access-toggles">
+              <!-- Rendered by settings.js -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- PIN Change Mini-Modal -->
+    <div id="modal-pin-change" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-pin-change')">
+      <div class="modal-card max-w-xs mx-auto">
+        <div class="modal-header">
+          <h3 id="pin-change-title" class="modal-title">Change PIN</h3>
+          <button onclick="closeModal('modal-pin-change')" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <label class="text-xs text-white/45 mb-1.5 block font-medium">New PIN (4 digits)</label>
+            <input type="password" id="pin-change-new" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="••••" class="inp">
+          </div>
+          <div>
+            <label class="text-xs text-white/45 mb-1.5 block font-medium">Confirm PIN</label>
+            <input type="password" id="pin-change-confirm" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="••••" class="inp">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button onclick="closeModal('modal-pin-change')" class="btn-outline flex-1">Cancel</button>
+          <button onclick="Settings.savePIN()" class="btn-gold flex-1">Save PIN</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>

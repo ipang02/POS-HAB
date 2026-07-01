@@ -23,6 +23,7 @@ const Settings = {
 
     // Render branch cards
     BranchConfig.renderCards();
+    this._renderSecurity();
   },
 
   _set(id, val)      { const el = document.getElementById(id); if (el) el.value = val ?? ''; },
@@ -58,7 +59,87 @@ const Settings = {
     AppData.settings.theme = checkbox.checked ? 'dark' : 'light';
     AppData.save('settings');
     showToast(checkbox.checked ? 'Dark mode active' : 'Light mode (reload to fully apply)', 'info');
-  }
+  },
+
+  _renderSecurity() {
+    const section = document.getElementById('settings-security-section');
+    if (!section) return;
+
+    if (Auth._role !== 'owner') {
+      section.classList.add('hidden');
+      return;
+    }
+    section.classList.remove('hidden');
+
+    const pins = AppData.settings.pins || { owner: '1234', staff: '0000' };
+    const ownerDisplay = document.getElementById('sec-owner-pin-display');
+    const staffDisplay = document.getElementById('sec-staff-pin-display');
+    if (ownerDisplay) ownerDisplay.textContent = pins.owner ? '••••' : 'Not set';
+    if (staffDisplay) staffDisplay.textContent = pins.staff ? '••••' : 'Not set';
+
+    const access = AppData.settings.staffAccess || {};
+    const modules = [
+      { key: 'analytics',  label: 'Analytics',  icon: 'fa-chart-bar' },
+      { key: 'services',   label: 'Services',   icon: 'fa-scissors' },
+      { key: 'barbers',    label: 'Barbers',    icon: 'fa-user-tie' },
+      { key: 'inventory',  label: 'Inventory',  icon: 'fa-boxes-stacking' },
+      { key: 'settings',   label: 'Settings',   icon: 'fa-gear' },
+    ];
+    const container = document.getElementById('sec-access-toggles');
+    if (!container) return;
+    container.innerHTML = modules.map(m => `
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid ${m.icon} text-xs text-white/35 w-4 text-center"></i>
+          <span class="text-sm text-white">${m.label}</span>
+        </div>
+        <label class="tog">
+          <input type="checkbox" onchange="Settings._saveStaffAccess('${m.key}', this.checked)"
+            ${access[m.key] ? 'checked' : ''}>
+          <span class="tog-slider"></span>
+        </label>
+      </div>
+    `).join('');
+  },
+
+  _saveStaffAccess(module, allowed) {
+    if (!AppData.settings.staffAccess) AppData.settings.staffAccess = {};
+    AppData.settings.staffAccess[module] = allowed;
+    AppData.save('settings');
+    Auth.applyRole();
+    showToast(`${module.charAt(0).toUpperCase() + module.slice(1)} access ${allowed ? 'granted' : 'revoked'} for staff`, 'info');
+  },
+
+  _pinChangeTarget: null,
+
+  changePIN(role) {
+    this._pinChangeTarget = role;
+    const titleEl = document.getElementById('pin-change-title');
+    if (titleEl) titleEl.textContent = role === 'owner' ? 'Change Owner PIN' : 'Change Staff PIN';
+    const newEl     = document.getElementById('pin-change-new');
+    const confirmEl = document.getElementById('pin-change-confirm');
+    if (newEl)     newEl.value = '';
+    if (confirmEl) confirmEl.value = '';
+    openModal('modal-pin-change');
+  },
+
+  savePIN() {
+    const newPin     = document.getElementById('pin-change-new')?.value.trim();
+    const confirmPin = document.getElementById('pin-change-confirm')?.value.trim();
+
+    if (!/^\d{4}$/.test(newPin)) {
+      showToast('PIN must be exactly 4 digits', 'error'); return;
+    }
+    if (newPin !== confirmPin) {
+      showToast('PINs do not match', 'error'); return;
+    }
+    if (!AppData.settings.pins) AppData.settings.pins = { owner: '1234', staff: '0000' };
+    AppData.settings.pins[this._pinChangeTarget] = newPin;
+    AppData.save('settings');
+    closeModal('modal-pin-change');
+    showToast(`${this._pinChangeTarget === 'owner' ? 'Owner' : 'Staff'} PIN updated`, 'success');
+    this._renderSecurity();
+  },
 };
 
 // ============================================================
