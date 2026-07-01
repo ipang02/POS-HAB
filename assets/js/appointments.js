@@ -20,7 +20,7 @@ const Appointments = {
 
     if (svcSel) {
       svcSel.innerHTML = '<option value="">Select service</option>' +
-        AppData.services.filter(s => s.is_active !== false).map(s => `<option value="${s.id}">${s.name} — ${formatRp(s.price)}</option>`).join('');
+        branchServices().filter(s => s.is_active !== false).map(s => `<option value="${s.id}">${s.name} — ${formatRp(s.price)}</option>`).join('');
     }
     if (barSel) {
       barSel.innerHTML = '<option value="">Select barber</option>' +
