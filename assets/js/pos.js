@@ -371,6 +371,15 @@ const POS = {
       time:     new Date().toTimeString().slice(0, 5)
     };
 
+    // Link transaction to customer profile by phone
+    const payPhone = Customers.normalisePhone(
+      document.getElementById('pay-customer-phone')?.value || ''
+    );
+    if (payPhone) {
+      trx.customerPhone = payPhone;
+      Customers.findOrCreate(customer, payPhone);
+    }
+
     AppData.transactions.unshift(trx);
     AppData.save('transactions');
 
