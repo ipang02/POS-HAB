@@ -21,6 +21,7 @@ const POS = {
     const barber = this._getSelectedBarber();
     this.cart.forEach(item => {
       if (item.type !== 'service') return;
+      if (item.lockedPrice) return;
       const svc = getServiceById(item.id);
       if (svc) item.price = resolvePrice(svc, barber);
     });
@@ -506,7 +507,8 @@ const POS = {
       id: serviceId,
       name: svc.name,
       price: price ?? resolvePrice(svc, getBarberById(barberId)),
-      qty: 1
+      qty: 1,
+      lockedPrice: price != null
     });
     this._prefillBarberId = barberId || null;
     this._prefillCustomer = customer || '';

@@ -342,7 +342,11 @@ const Appointments = {
     if (!a) return;
     const svc  = getServiceById(a.serviceId);
     const barb = getBarberById(a.barberId);
-    const price = a.bookedPrice ?? (svc ? resolveBookingPrice(svc, barb) : 0);
+    if (!svc) {
+      showToast('Service no longer exists — cannot process payment', 'error');
+      return;
+    }
+    const price = a.bookedPrice ?? resolveBookingPrice(svc, barb);
     closeModal('modal-appt-detail');
     POS.prefill({ barberId: a.barberId, serviceId: a.serviceId, price, customer: a.customer });
     navigate('pos');
