@@ -10,6 +10,7 @@ const POS = {
   activePanel: 'services',   // 'services' | 'products'
   payMethod: 'cash',
   _prefillCustomer: '',
+  _prefillBarberId: null,
 
   _getSelectedBarber() {
     const id = parseInt(document.getElementById('pos-barber')?.value) || 0;
@@ -25,17 +26,28 @@ const POS = {
     });
     this.renderCart();
     this.recalc();
+    this.renderServiceGrid();
   },
 
   init() {
     this.renderBarberSelect();
+    if (this._prefillBarberId) {
+      const barberEl = document.getElementById('pos-barber');
+      if (barberEl) barberEl.value = this._prefillBarberId;
+      this._prefillBarberId = null;
+      this._recalcCartPrices();
+    }
     this.renderServiceGrid();
     this.renderProductGrid();
     this.renderCart();
     this.updateTaxDisplay();
     // reset to services tab on init
     this.switchPanel('services', document.getElementById('pos-tab-services'));
-    document.getElementById('pos-barber')?.addEventListener('change', () => this._recalcCartPrices());
+    const barberSel = document.getElementById('pos-barber');
+    if (barberSel && !barberSel._habChangeWired) {
+      barberSel.addEventListener('change', () => this._recalcCartPrices());
+      barberSel._habChangeWired = true;
+    }
   },
 
   // ── Panel Switch (Services / Products) ─────────────────────
@@ -96,7 +108,7 @@ const POS = {
         </div>
         <p class="text-sm font-semibold text-white mb-0.5 leading-tight">${s.name}</p>
         <p class="text-[10px] text-white/35 mb-2 leading-snug">${s.desc || ''}</p>
-        <p class="text-sm font-bold gold-text">${formatRp(s.price)}</p>
+        <p class="text-sm font-bold gold-text">${formatRp(resolvePrice(s, this._getSelectedBarber()))}</p>
         <p class="text-[10px] text-white/30 mt-0.5">${s.duration} min</p>
         ${inCart ? `<div class="mt-2 text-[10px] font-bold text-gold bg-gold/10 rounded-lg py-0.5">✓ In Cart (${inCart.qty})</div>` : ''}
       </div>`;
@@ -177,7 +189,7 @@ const POS = {
         if (existing.qty >= maxQty) { showToast(`Only ${maxQty} ${item.unit} in stock`, 'warning'); return; }
         existing.qty++;
       } else {
-        this.cart.push({ key, type:'product', id, name: item.name, price: item.price, qty: 1, stock: item.stock, commissionRM: item.commissionRM || null });
+        this.cart.push({ key, type:'product', id, name: item.name, price: item.price, qty: 1, stock: item.stock, commissionRM: item.commissionRM ?? null });
       }
       showToast(`${item.name} added`, 'success', 1400);
     }
@@ -479,7 +491,8 @@ const POS = {
 
   newOrder() {
     this.clearCart();
-    document.getElementById('pos-barber').value = '';
+    const barberEl = document.getElementById('pos-barber');
+    if (barberEl) barberEl.value = '';
     showToast('Ready for new order', 'info', 2000);
   },
 
@@ -495,8 +508,7 @@ const POS = {
       price: price ?? resolvePrice(svc, getBarberById(barberId)),
       qty: 1
     });
-    const sel = document.getElementById('pos-barber');
-    if (sel && barberId) sel.value = barberId;
+    this._prefillBarberId = barberId || null;
     this._prefillCustomer = customer || '';
     this._refreshGrids();
     this.renderCart();
