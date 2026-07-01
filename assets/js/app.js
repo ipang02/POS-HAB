@@ -71,6 +71,8 @@ const DEFAULT_DATA = {
 
   queue: [],
 
+  customers: [],
+
   branches: [
     { id:1, name:'Kota Bharu',  shortName:'KB', address:'No. 12, Jalan Sultan Yahya Petra, 15000 Kota Bharu' },
     { id:2, name:'Kedai Lalat', shortName:'KL', address:'No. 3, Pekan Kedai Lalat, Kelantan' },
@@ -156,12 +158,13 @@ const AppData = {
   transactions: StorageManager.load('transactions', DEFAULT_DATA.transactions),
   inventory:    StorageManager.load('inventory',    DEFAULT_DATA.inventory),
   queue:        StorageManager.load('queue',        DEFAULT_DATA.queue),
+  customers:    StorageManager.load('customers',    DEFAULT_DATA.customers),
   branches:     StorageManager.load('branches',     DEFAULT_DATA.branches),
   settings:     StorageManager.load('settings',     DEFAULT_DATA.settings),
 
   save(key) { StorageManager.save(key, this[key]); },
   saveAll() {
-    ['services','barbers','appointments','transactions','inventory','queue','branches','settings']
+    ['services','barbers','appointments','transactions','inventory','queue','branches','settings','customers']
       .forEach(k => StorageManager.save(k, this[k]));
   }
 };
@@ -287,6 +290,7 @@ const Router = {
     analytics:    { title:'Analytics',          sub: () => `${currentBranchName()} — revenue insights` },
     inventory:    { title:'Inventory',          sub: () => `${currentBranchName()} — stock management` },
     settings:     { title:'Settings',           sub: () => `${currentBranchName()} — system configuration` },
+    customers:    { title:'Customers',          sub: () => 'Global customer profiles — all branches' },
   },
 
   go(view) {
@@ -305,7 +309,7 @@ const Router = {
     document.getElementById('page-sub').textContent   = p.sub();
     this.current = view;
     // call module init
-    const inits = { dashboard: () => Dashboard.init(), pos: () => POS.init(), services: () => ServicesMgmt.init(), appointments: () => Appointments.init(), barbers: () => Barbers.init(), analytics: () => Analytics.init(), inventory: () => Inventory.init(), settings: () => Settings.load() };
+    const inits = { dashboard: () => Dashboard.init(), pos: () => POS.init(), services: () => ServicesMgmt.init(), appointments: () => Appointments.init(), barbers: () => Barbers.init(), analytics: () => Analytics.init(), inventory: () => Inventory.init(), settings: () => Settings.load(), customers: () => Customers.init() };
     if (inits[view]) inits[view]();
     // scroll to top
     document.querySelector('main').scrollTop = 0;
