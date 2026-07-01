@@ -1,0 +1,17 @@
+# Credentials — never commit real config
+config.php
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+error_log
