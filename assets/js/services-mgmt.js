@@ -75,8 +75,8 @@ const ServicesMgmt = {
         <!-- Stats -->
         <div class="grid grid-cols-3 gap-2 border-t border-white/6 mt-3 pt-3">
           <div class="text-center">
-            <div class="text-sm font-bold gold-text">${formatRp(s.price)}</div>
-            <div class="text-[9px] text-white/30 uppercase tracking-wide">Price</div>
+            <div class="text-sm font-bold gold-text">${s.tierPrices ? 'Tiered' : formatRp(s.price)}</div>
+            <div class="text-[9px] text-white/30 uppercase tracking-wide">${s.tierPrices ? 'Junior–Master' : 'Price'}</div>
           </div>
           <div class="text-center border-x border-white/6">
             <div class="text-sm font-bold text-white">${s.duration}</div>
@@ -139,6 +139,12 @@ const ServicesMgmt = {
     document.getElementById('svc-icon').value     = 'fa-scissors';
     document.getElementById('svc-desc').value     = '';
     document.getElementById('svc-active').checked = true;
+    document.getElementById('svc-booking-price').value = '';
+    document.getElementById('svc-tier-enabled').checked = false;
+    document.getElementById('svc-tier-prices').classList.add('hidden');
+    document.getElementById('svc-tier-junior').value = '';
+    document.getElementById('svc-tier-senior').value = '';
+    document.getElementById('svc-tier-master').value = '';
     this.previewIcon('fa-scissors');
     this._bindPreview();
     openModal('modal-service');
@@ -158,6 +164,13 @@ const ServicesMgmt = {
     document.getElementById('svc-icon').value     = s.icon || 'fa-scissors';
     document.getElementById('svc-desc').value     = s.desc || '';
     document.getElementById('svc-active').checked = s.is_active !== false;
+    document.getElementById('svc-booking-price').value = s.bookingPrice ?? '';
+    const hasTier = s.tierPrices != null;
+    document.getElementById('svc-tier-enabled').checked = hasTier;
+    document.getElementById('svc-tier-prices').classList.toggle('hidden', !hasTier);
+    document.getElementById('svc-tier-junior').value = s.tierPrices?.junior ?? '';
+    document.getElementById('svc-tier-senior').value = s.tierPrices?.senior ?? '';
+    document.getElementById('svc-tier-master').value = s.tierPrices?.master ?? '';
     this.previewIcon(s.icon || 'fa-scissors');
     this._bindPreview();
     openModal('modal-service');
@@ -182,6 +195,11 @@ const ServicesMgmt = {
     el.className = `fa-solid ${icon} text-gold text-lg`;
   },
 
+  toggleTierPricing(enabled) {
+    const wrap = document.getElementById('svc-tier-prices');
+    if (wrap) wrap.classList.toggle('hidden', !enabled);
+  },
+
   // ── Save ─────────────────────────────────────────────────────
   save() {
     const name     = document.getElementById('svc-name').value.trim();
@@ -192,6 +210,22 @@ const ServicesMgmt = {
     const desc     = document.getElementById('svc-desc').value.trim();
     const isActive = document.getElementById('svc-active').checked;
 
+    const bookingPriceRaw = parseFloat(document.getElementById('svc-booking-price').value);
+    const bookingPrice    = isNaN(bookingPriceRaw) ? null : bookingPriceRaw;
+
+    const tierEnabled = document.getElementById('svc-tier-enabled').checked;
+    let tierPrices = null;
+    if (tierEnabled) {
+      const j = parseFloat(document.getElementById('svc-tier-junior').value);
+      const s = parseFloat(document.getElementById('svc-tier-senior').value);
+      const m = parseFloat(document.getElementById('svc-tier-master').value);
+      if (isNaN(j) || isNaN(s) || isNaN(m)) {
+        showToast('Enter all three tier prices (Junior, Senior, Master)', 'error');
+        return;
+      }
+      tierPrices = { junior: j, senior: s, master: m };
+    }
+
     if (!name)           { showToast('Service name is required', 'error'); return; }
     if (isNaN(price) || price < 0) { showToast('Enter a valid price', 'error'); return; }
     if (!duration || duration < 5) { showToast('Duration must be at least 5 minutes', 'error'); return; }
@@ -201,11 +235,11 @@ const ServicesMgmt = {
     if (editId) {
       const idx = AppData.services.findIndex(s => s.id === editId);
       if (idx > -1) {
-        AppData.services[idx] = { ...AppData.services[idx], name, price, duration, cat, icon, desc, is_active: isActive };
+        AppData.services[idx] = { ...AppData.services[idx], name, price, duration, cat, icon, desc, is_active: isActive, tierPrices, bookingPrice };
         showToast(`"${name}" updated successfully`, 'success');
       }
     } else {
-      AppData.services.push({ id: nextNumId(AppData.services), name, price, duration, cat, icon, desc, is_active: isActive });
+      AppData.services.push({ id: nextNumId(AppData.services), name, price, duration, cat, icon, desc, is_active: isActive, tierPrices, bookingPrice });
       showToast(`"${name}" added to services`, 'success');
     }
 
