@@ -113,4 +113,25 @@
     </div>
   </div>
 
+  <!-- Commission Report -->
+  <div id="an-commission-wrap" class="glass rounded-2xl p-5 hidden">
+    <div class="flex items-center gap-2 mb-4">
+      <i class="fa-solid fa-hand-holding-dollar text-sm" style="color:#6B7280"></i>
+      <h3 class="text-sm font-bold text-white">Staff Commission — Product Sales</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="border-b border-white/6">
+            <th class="pb-2 pr-4 text-[10px] font-semibold text-white/35 uppercase tracking-wide">Barber</th>
+            <th class="pb-2 pr-4 text-[10px] font-semibold text-white/35 uppercase tracking-wide">Units Sold</th>
+            <th class="pb-2 pr-4 text-[10px] font-semibold text-white/35 uppercase tracking-wide">Product Revenue</th>
+            <th class="pb-2 text-[10px] font-semibold text-white/35 uppercase tracking-wide text-right">Commission Earned</th>
+          </tr>
+        </thead>
+        <tbody id="an-commission-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
 </section>

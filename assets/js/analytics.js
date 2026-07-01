@@ -20,6 +20,7 @@ const Analytics = {
     this._renderBranchComparison();
     this._initCharts(trx);
     this._renderTable(trx);
+    this._renderCommissionTable(trx);
   },
 
   _renderBranchComparison() {
@@ -258,6 +259,42 @@ const Analytics = {
           <td class="py-2.5 text-right text-sm font-semibold text-white">${formatRp(t.total)}</td>
         </tr>`;
     }).join('') || `<tr><td colspan="7" class="text-center py-8 text-white/25 text-sm">No transactions in this range</td></tr>`;
+  },
+
+  _renderCommissionTable(trx) {
+    const wrap = document.getElementById('an-commission-wrap');
+    const tbody = document.getElementById('an-commission-tbody');
+    if (!tbody) return;
+
+    const barberMap = {};
+    trx.forEach(t => {
+      (t.services || []).forEach(s => {
+        if (s.type !== 'product' || !s.commissionRM) return;
+        if (!barberMap[t.barberId]) barberMap[t.barberId] = { sold: 0, revenue: 0, commission: 0 };
+        barberMap[t.barberId].sold       += (s.qty || 1);
+        barberMap[t.barberId].revenue    += (s.price || 0) * (s.qty || 1);
+        barberMap[t.barberId].commission += s.commissionRM * (s.qty || 1);
+      });
+    });
+
+    const entries = Object.entries(barberMap);
+    if (wrap) wrap.classList.toggle('hidden', entries.length === 0);
+
+    tbody.innerHTML = entries.length ? entries.map(([barberId, d]) => {
+      const b = getBarberById(parseInt(barberId));
+      return `<tr class="hover:bg-white/2 transition-colors border-b border-white/5 last:border-0">
+        <td class="py-2.5 pr-4">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+              style="background:${b?.color || '#374151'}33;border:1px solid ${b?.color || '#374151'}44">${b?.initials || '?'}</div>
+            <span class="text-sm text-white">${b?.name || 'Unknown'}</span>
+          </div>
+        </td>
+        <td class="py-2.5 pr-4 text-sm text-white/60">${d.sold} unit${d.sold !== 1 ? 's' : ''}</td>
+        <td class="py-2.5 pr-4 text-sm text-white">${formatRp(d.revenue)}</td>
+        <td class="py-2.5 text-right text-sm font-bold text-green-400">${formatRp(d.commission)}</td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="4" class="py-6 text-center text-xs text-white/30">No product commissions recorded in this period</td></tr>`;
   },
 
   filterTrx() {
