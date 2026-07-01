@@ -82,6 +82,11 @@
       <i class="fa-solid fa-chevron-left text-[10px] transition-transform duration-300" id="sb-icon"></i>
       <span class="lbl text-[11px]">Collapse</span>
     </button>
+    <button id="sidebar-lock-btn" onclick="Auth.lock()"
+      class="hidden mt-1 w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-white/30 hover:text-white hover:bg-white/5 text-xs transition-all">
+      <i class="fa-solid fa-lock text-[10px]"></i>
+      <span class="lbl text-[11px]">Lock Screen</span>
+    </button>
   </div>
 
 </aside>
