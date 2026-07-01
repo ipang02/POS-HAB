@@ -7,23 +7,23 @@
 const DEFAULT_DATA = {
 
   services: [
-    { id:1,  name:'Haircut',           price:20,  duration:45,  cat:'hair',      icon:'fa-scissors',           desc:'Classic & modern cuts',      is_active:true },
-    { id:2,  name:'Beard Trim',        price:12,  duration:30,  cat:'beard',     icon:'fa-face-grin-beam',     desc:'Shape & clean your beard',   is_active:true },
-    { id:3,  name:'Hair Wash',         price:8,   duration:20,  cat:'hair',      icon:'fa-shower',             desc:'Shampoo & conditioning',     is_active:true },
-    { id:4,  name:'Hair Coloring',     price:80,  duration:90,  cat:'treatment', icon:'fa-palette',            desc:'Full color treatment',        is_active:true },
-    { id:5,  name:'Kids Haircut',      price:15,  duration:30,  cat:'hair',      icon:'fa-child',              desc:'For kids under 12 yrs',      is_active:true },
-    { id:6,  name:'Hot Towel Shave',   price:18,  duration:40,  cat:'beard',     icon:'fa-fire-flame-curved',  desc:'Traditional wet shave',      is_active:true },
-    { id:7,  name:'Hair Treatment',    price:45,  duration:60,  cat:'treatment', icon:'fa-spa',                desc:'Keratin & deep repair',       is_active:true },
-    { id:8,  name:'Full Package',      price:88,  duration:120, cat:'package',   icon:'fa-crown',              desc:'Haircut + Beard + Wash',     is_active:true },
-    { id:9,  name:'Eyebrow Trim',      price:8,   duration:15,  cat:'beard',     icon:'fa-eye',                desc:'Define & shape brows',       is_active:true },
-    { id:10, name:'Hair Styling',      price:15,  duration:30,  cat:'hair',      icon:'fa-wind',               desc:'Pomade finish & styling',    is_active:true },
+    { id:1,  name:'Haircut',           price:20,  duration:45,  cat:'hair',      icon:'fa-scissors',           desc:'Classic & modern cuts',      is_active:true, tierPrices:null, bookingPrice:null },
+    { id:2,  name:'Beard Trim',        price:12,  duration:30,  cat:'beard',     icon:'fa-face-grin-beam',     desc:'Shape & clean your beard',   is_active:true, tierPrices:null, bookingPrice:null },
+    { id:3,  name:'Hair Wash',         price:8,   duration:20,  cat:'hair',      icon:'fa-shower',             desc:'Shampoo & conditioning',     is_active:true, tierPrices:null, bookingPrice:null },
+    { id:4,  name:'Hair Coloring',     price:80,  duration:90,  cat:'treatment', icon:'fa-palette',            desc:'Full color treatment',        is_active:true, tierPrices:null, bookingPrice:null },
+    { id:5,  name:'Kids Haircut',      price:15,  duration:30,  cat:'hair',      icon:'fa-child',              desc:'For kids under 12 yrs',      is_active:true, tierPrices:null, bookingPrice:null },
+    { id:6,  name:'Hot Towel Shave',   price:18,  duration:40,  cat:'beard',     icon:'fa-fire-flame-curved',  desc:'Traditional wet shave',      is_active:true, tierPrices:null, bookingPrice:null },
+    { id:7,  name:'Hair Treatment',    price:45,  duration:60,  cat:'treatment', icon:'fa-spa',                desc:'Keratin & deep repair',       is_active:true, tierPrices:null, bookingPrice:null },
+    { id:8,  name:'Full Package',      price:88,  duration:120, cat:'package',   icon:'fa-crown',              desc:'Haircut + Beard + Wash',     is_active:true, tierPrices:null, bookingPrice:null },
+    { id:9,  name:'Eyebrow Trim',      price:8,   duration:15,  cat:'beard',     icon:'fa-eye',                desc:'Define & shape brows',       is_active:true, tierPrices:null, bookingPrice:null },
+    { id:10, name:'Hair Styling',      price:15,  duration:30,  cat:'hair',      icon:'fa-wind',               desc:'Pomade finish & styling',    is_active:true, tierPrices:null, bookingPrice:null },
   ],
 
   barbers: [
-    { id:1, name:'Razif Hakim',       initials:'RH', color:'#6366f1', status:'available', skills:['Fade','Pompadour','Beard Styling'],      commission:30, phone:'019-3456789',  branchId:1 },
-    { id:2, name:'Hafizuddin Azmi',   initials:'HA', color:'#f59e0b', status:'busy',      skills:['Classic Cut','Hair Coloring','Keratin'],  commission:30, phone:'011-23456789', branchId:1 },
-    { id:3, name:'Amran bin Yusof',   initials:'AY', color:'#22c55e', status:'available', skills:['Modern Style','Undercut','Kids Cut'],     commission:25, phone:'017-8901234',  branchId:2 },
-    { id:4, name:'Shahrul Nizam',     initials:'SN', color:'#ec4899', status:'off',       skills:['Traditional Shave','Eyebrow Trim'],       commission:25, phone:'013-4567890',  branchId:2 },
+    { id:1, name:'Razif Hakim',       initials:'RH', color:'#6366f1', status:'available', skills:['Fade','Pompadour','Beard Styling'],      commission:30, phone:'019-3456789',  tier:null, branchId:1 },
+    { id:2, name:'Hafizuddin Azmi',   initials:'HA', color:'#f59e0b', status:'busy',      skills:['Classic Cut','Hair Coloring','Keratin'],  commission:30, phone:'011-23456789', tier:null, branchId:1 },
+    { id:3, name:'Amran bin Yusof',   initials:'AY', color:'#22c55e', status:'available', skills:['Modern Style','Undercut','Kids Cut'],     commission:25, phone:'017-8901234',  tier:null, branchId:2 },
+    { id:4, name:'Shahrul Nizam',     initials:'SN', color:'#ec4899', status:'off',       skills:['Traditional Shave','Eyebrow Trim'],       commission:25, phone:'013-4567890',  tier:null, branchId:2 },
   ],
 
   appointments: [
@@ -55,18 +55,18 @@ const DEFAULT_DATA = {
   ],
 
   inventory: [
-    { id:1,  name:'Pomade Strong Hold',   cat:'styling',  stock:12, minStock:5,  price:25,  unit:'pcs',  branchId:1 },
-    { id:2,  name:'Barber Scissors Pro',  cat:'tools',    stock:3,  minStock:5,  price:85,  unit:'pcs',  branchId:1 },
-    { id:3,  name:'Shaving Foam',         cat:'shaving',  stock:8,  minStock:3,  price:15,  unit:'pcs',  branchId:1 },
-    { id:4,  name:'Hair Clipper Wahl',    cat:'tools',    stock:2,  minStock:3,  price:150, unit:'unit', branchId:1 },
-    { id:5,  name:'Conditioner L\'Oreal', cat:'haircare', stock:15, minStock:5,  price:22,  unit:'btl',  branchId:1 },
-    { id:6,  name:'Shampoo Kerastase',    cat:'haircare', stock:10, minStock:5,  price:28,  unit:'btl',  branchId:1 },
-    { id:7,  name:'Hair Wax Matt',        cat:'styling',  stock:20, minStock:8,  price:18,  unit:'pcs',  branchId:2 },
-    { id:8,  name:'Razor Blades 100pcs',  cat:'shaving',  stock:4,  minStock:10, price:12,  unit:'box',  branchId:2 },
-    { id:9,  name:'Barber Cape',          cat:'tools',    stock:6,  minStock:3,  price:40,  unit:'pcs',  branchId:2 },
-    { id:10, name:'Hair Spray',           cat:'styling',  stock:7,  minStock:5,  price:16,  unit:'pcs',  branchId:2 },
-    { id:11, name:'Neck Strip Roll',      cat:'tools',    stock:2,  minStock:5,  price:8,   unit:'roll', branchId:2 },
-    { id:12, name:'Beard Oil Premium',    cat:'beard',    stock:9,  minStock:4,  price:35,  unit:'btl',  branchId:2 },
+    { id:1,  name:'Pomade Strong Hold',   cat:'styling',  stock:12, minStock:5,  price:25,  unit:'pcs',  commissionRM:null, branchId:1 },
+    { id:2,  name:'Barber Scissors Pro',  cat:'tools',    stock:3,  minStock:5,  price:85,  unit:'pcs',  commissionRM:null, branchId:1 },
+    { id:3,  name:'Shaving Foam',         cat:'shaving',  stock:8,  minStock:3,  price:15,  unit:'pcs',  commissionRM:null, branchId:1 },
+    { id:4,  name:'Hair Clipper Wahl',    cat:'tools',    stock:2,  minStock:3,  price:150, unit:'unit', commissionRM:null, branchId:1 },
+    { id:5,  name:'Conditioner L\'Oreal', cat:'haircare', stock:15, minStock:5,  price:22,  unit:'btl',  commissionRM:null, branchId:1 },
+    { id:6,  name:'Shampoo Kerastase',    cat:'haircare', stock:10, minStock:5,  price:28,  unit:'btl',  commissionRM:null, branchId:1 },
+    { id:7,  name:'Hair Wax Matt',        cat:'styling',  stock:20, minStock:8,  price:18,  unit:'pcs',  commissionRM:null, branchId:2 },
+    { id:8,  name:'Razor Blades 100pcs',  cat:'shaving',  stock:4,  minStock:10, price:12,  unit:'box',  commissionRM:null, branchId:2 },
+    { id:9,  name:'Barber Cape',          cat:'tools',    stock:6,  minStock:3,  price:40,  unit:'pcs',  commissionRM:null, branchId:2 },
+    { id:10, name:'Hair Spray',           cat:'styling',  stock:7,  minStock:5,  price:16,  unit:'pcs',  commissionRM:null, branchId:2 },
+    { id:11, name:'Neck Strip Roll',      cat:'tools',    stock:2,  minStock:5,  price:8,   unit:'roll', commissionRM:null, branchId:2 },
+    { id:12, name:'Beard Oil Premium',    cat:'beard',    stock:9,  minStock:4,  price:35,  unit:'btl',  commissionRM:null, branchId:2 },
   ],
 
   queue: [],
@@ -176,6 +176,18 @@ function formatRp(amount) {
 }
 
 function today() { return _today(); }
+
+function resolvePrice(svc, barber) {
+  if (svc?.tierPrices && barber?.tier && svc.tierPrices[barber.tier] != null) {
+    return svc.tierPrices[barber.tier];
+  }
+  return svc?.price ?? 0;
+}
+
+function resolveBookingPrice(svc, barber) {
+  if (svc?.bookingPrice != null) return svc.bookingPrice;
+  return resolvePrice(svc, barber);
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return '—';
