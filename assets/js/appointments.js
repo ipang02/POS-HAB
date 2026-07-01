@@ -238,6 +238,11 @@ const Appointments = {
     }
 
     AppData.save('appointments');
+
+    // Link appointment to customer profile by phone
+    const apptPhone = document.getElementById('appt-phone').value.trim();
+    if (apptPhone) Customers.findOrCreate(customer, apptPhone);
+
     closeModal('modal-appt');
     this.renderCalendar();
     this.renderList();
