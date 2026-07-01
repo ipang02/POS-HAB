@@ -292,6 +292,7 @@ const POS = {
     document.getElementById('cash-tendered').value       = '';
     document.getElementById('cash-change').textContent   = formatRp(0);
     document.getElementById('pay-customer-name').value  = '';
+    document.getElementById('pay-customer-phone').value = '';
     document.getElementById('card-last4').value          = '';
 
     this.selectPayMethodByName('cash');

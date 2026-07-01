@@ -91,10 +91,17 @@
         </div>
       </div>
 
-      <!-- Customer Name -->
-      <div class="mt-4">
-        <label class="text-xs text-white/45 mb-1.5 block font-medium">Customer Name (optional)</label>
-        <input type="text" id="pay-customer-name" placeholder="Walk-in customer" class="inp">
+      <!-- Customer Info -->
+      <div class="mt-4 space-y-3">
+        <div>
+          <label class="text-xs text-white/45 mb-1.5 block font-medium">Customer Name (optional)</label>
+          <input type="text" id="pay-customer-name" placeholder="Walk-in customer" class="inp">
+        </div>
+        <div>
+          <label class="text-xs text-white/45 mb-1.5 block font-medium">Phone Number (optional)</label>
+          <input type="text" id="pay-customer-phone" placeholder="019-3456789" class="inp">
+          <p class="text-[10px] text-white/30 mt-1">Auto-creates a customer profile if new</p>
+        </div>
       </div>
 
       <!-- Actions -->
