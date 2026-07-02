@@ -65,6 +65,7 @@ const SetupWizard = {
       const conf = document.getElementById('wiz-staff-pin-confirm').value;
       if (!/^\d{4}$/.test(pin))  { showToast('Staff PIN must be exactly 4 digits', 'error'); return false; }
       if (pin !== conf)           { showToast('Staff PINs do not match', 'error'); return false; }
+      if (pin === this._data.ownerPin) { showToast('Staff PIN must be different from Owner PIN', 'error'); return false; }
       return true;
     }
 
@@ -79,7 +80,7 @@ const SetupWizard = {
       const hasValid = Array.from(rows).some(row => {
         const name  = row.querySelector('.wiz-svc-name').value.trim();
         const price = row.querySelector('.wiz-svc-price').value;
-        return name && price !== '' && !isNaN(parseFloat(price));
+        return name && price !== '' && !isNaN(parseFloat(price)) && parseFloat(price) >= 0;
       });
       if (!hasValid) { showToast('Add at least one service with a name and price', 'error'); return false; }
       return true;
@@ -113,7 +114,7 @@ const SetupWizard = {
       rows.forEach(row => {
         const name  = row.querySelector('.wiz-svc-name').value.trim();
         const price = row.querySelector('.wiz-svc-price').value;
-        if (name && price !== '' && !isNaN(parseFloat(price))) {
+        if (name && price !== '' && !isNaN(parseFloat(price)) && parseFloat(price) >= 0) {
           this._data.services.push({ name, price: parseFloat(price) });
         }
       });
@@ -275,6 +276,5 @@ document.addEventListener('DOMContentLoaded', () => {
   const initEl = document.getElementById('wiz-barber-initials');
   if (initEl) {
     initEl.addEventListener('input', () => { initEl.dataset.manuallyEdited = '1'; });
-    initEl.addEventListener('focus', () => { initEl.removeAttribute('data-manually-edited'); });
   }
 });
