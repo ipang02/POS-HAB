@@ -554,3 +554,6 @@ tr.hover\:bg-white\/2:hover { background: #F8F8F6 !important; }
 .nav-hidden {
   display: none !important;
 }
+
+/* ── Setup Wizard ─────────────────────────────────────────── */
+.wiz-svc-price { min-width: 80px; }
