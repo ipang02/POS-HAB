@@ -19,6 +19,8 @@ const SetupWizard = {
     this._step = 1;
     this._data = this._blankData();
     this._renderStep(1);
+    const initEl = document.getElementById('wiz-barber-initials');
+    if (initEl) initEl.removeAttribute('data-manually-edited');
     document.getElementById('setup-wizard').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
   },
@@ -38,7 +40,8 @@ const SetupWizard = {
 
   done() {
     this._close();
-    Auth.lock();
+    sessionStorage.removeItem('hab_role');
+    location.reload();
   },
 
   // ── Validation ──────────────────────────────────────────────
@@ -139,18 +142,32 @@ const SetupWizard = {
     AppData.settings.pins.owner = d.ownerPin;
     AppData.settings.pins.staff = d.staffPin;
 
-    // Update branch name in branches array
-    if (AppData.branches[0]) {
-      AppData.branches[0].name = d.branchName;
-      if (d.address) AppData.branches[0].address = d.address;
-    }
+    // Replace branches with a single configured branch
+    AppData.branches = [{
+      id: 1,
+      name: d.branchName,
+      shortName: d.branchName.trim().slice(0, 3).toUpperCase(),
+      address: d.address || ''
+    }];
 
-    // Update branch settings (used by receipts)
-    if (AppData.settings.branchSettings && AppData.settings.branchSettings[0]) {
-      AppData.settings.branchSettings[0].shopName = d.branchName;
-      if (d.address) AppData.settings.branchSettings[0].address = d.address;
-      if (d.phone)   AppData.settings.branchSettings[0].phone   = d.phone;
-    }
+    // Rebuild branchSettings with a single entry
+    AppData.settings.branchSettings = [{
+      branchId: 1,
+      shopName: d.branchName,
+      address: d.address || '',
+      phone: d.phone || '',
+      email: '',
+      instagram: '',
+      hours: {
+        Mon:{open:'09:00',close:'21:00',active:true},
+        Tue:{open:'09:00',close:'21:00',active:true},
+        Wed:{open:'09:00',close:'21:00',active:true},
+        Thu:{open:'09:00',close:'21:00',active:true},
+        Fri:{open:'09:00',close:'22:00',active:true},
+        Sat:{open:'08:00',close:'22:00',active:true},
+        Sun:{open:'10:00',close:'20:00',active:true}
+      }
+    }];
 
     // Update global settings fields (backward compat)
     AppData.settings.shopName = d.branchName;
