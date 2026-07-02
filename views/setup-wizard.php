@@ -37,17 +37,17 @@
         </div>
         <div class="p-6 space-y-4">
           <div>
-            <label class="text-xs text-white/45 mb-1.5 block font-medium">Branch / Shop Name <span class="text-red-400">*</span></label>
+            <label for="wiz-branch-name" class="text-xs text-white/45 mb-1.5 block font-medium">Branch / Shop Name <span class="text-red-400">*</span></label>
             <input type="text" id="wiz-branch-name" placeholder="e.g. HAB Barbershop — Kota Bharu" class="inp"
               oninput="SetupWizard._autoNextReady()">
           </div>
           <div>
-            <label class="text-xs text-white/45 mb-1.5 block font-medium">Address <span class="text-white/25">(optional)</span></label>
+            <label for="wiz-address" class="text-xs text-white/45 mb-1.5 block font-medium">Address <span class="text-white/25">(optional)</span></label>
             <input type="text" id="wiz-address" placeholder="e.g. No. 12, Jalan Sultan Yahya Petra" class="inp">
           </div>
           <div>
-            <label class="text-xs text-white/45 mb-1.5 block font-medium">Phone <span class="text-white/25">(optional)</span></label>
-            <input type="text" id="wiz-phone" placeholder="e.g. 09-748 1234" class="inp">
+            <label for="wiz-phone" class="text-xs text-white/45 mb-1.5 block font-medium">Phone <span class="text-white/25">(optional)</span></label>
+            <input type="text" id="wiz-phone" inputmode="tel" placeholder="e.g. 09-748 1234" class="inp">
           </div>
         </div>
         <div class="px-6 pb-6">
@@ -65,12 +65,12 @@
         </div>
         <div class="p-6 space-y-4">
           <div>
-            <label class="text-xs text-white/45 mb-1.5 block font-medium">New PIN <span class="text-red-400">*</span></label>
-            <input type="password" id="wiz-owner-pin" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••" class="inp">
+            <label for="wiz-owner-pin" class="text-xs text-white/45 mb-1.5 block font-medium">New PIN <span class="text-red-400">*</span></label>
+            <input type="password" id="wiz-owner-pin" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" class="inp">
           </div>
           <div>
-            <label class="text-xs text-white/45 mb-1.5 block font-medium">Confirm PIN <span class="text-red-400">*</span></label>
-            <input type="password" id="wiz-owner-pin-confirm" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••" class="inp">
+            <label for="wiz-owner-pin-confirm" class="text-xs text-white/45 mb-1.5 block font-medium">Confirm PIN <span class="text-red-400">*</span></label>
+            <input type="password" id="wiz-owner-pin-confirm" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" class="inp">
           </div>
         </div>
         <div class="px-6 pb-6">
@@ -88,12 +88,12 @@
         </div>
         <div class="p-6 space-y-4">
           <div>
-            <label class="text-xs text-white/45 mb-1.5 block font-medium">Staff PIN <span class="text-red-400">*</span></label>
-            <input type="password" id="wiz-staff-pin" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••" class="inp">
+            <label for="wiz-staff-pin" class="text-xs text-white/45 mb-1.5 block font-medium">Staff PIN <span class="text-red-400">*</span></label>
+            <input type="password" id="wiz-staff-pin" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" class="inp">
           </div>
           <div>
-            <label class="text-xs text-white/45 mb-1.5 block font-medium">Confirm Staff PIN <span class="text-red-400">*</span></label>
-            <input type="password" id="wiz-staff-pin-confirm" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••" class="inp">
+            <label for="wiz-staff-pin-confirm" class="text-xs text-white/45 mb-1.5 block font-medium">Confirm Staff PIN <span class="text-red-400">*</span></label>
+            <input type="password" id="wiz-staff-pin-confirm" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" class="inp">
           </div>
         </div>
         <div class="px-6 pb-6">
@@ -111,14 +111,13 @@
         </div>
         <div class="p-6 space-y-4">
           <div>
-            <label class="text-xs text-white/45 mb-1.5 block font-medium">Full Name <span class="text-red-400">*</span></label>
+            <label for="wiz-barber-name" class="text-xs text-white/45 mb-1.5 block font-medium">Full Name <span class="text-red-400">*</span></label>
             <input type="text" id="wiz-barber-name" placeholder="e.g. Ahmad Razif" class="inp"
               oninput="SetupWizard._onBarberNameInput(this.value)">
           </div>
           <div>
-            <label class="text-xs text-white/45 mb-1.5 block font-medium">Initials (max 2 chars)</label>
-            <input type="text" id="wiz-barber-initials" maxlength="2" placeholder="AR" class="inp"
-              style="text-transform:uppercase">
+            <label for="wiz-barber-initials" class="text-xs text-white/45 mb-1.5 block font-medium">Initials (max 2 chars)</label>
+            <input type="text" id="wiz-barber-initials" maxlength="2" placeholder="AR" class="inp uppercase">
           </div>
         </div>
         <div class="px-6 pb-6">
