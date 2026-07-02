@@ -12,6 +12,7 @@
 <body>
 
 <?php include 'views/pin-screen.php'; ?>
+<?php include 'views/setup-wizard.php'; ?>
 
 <!-- Mobile sidebar backdrop -->
 <div id="mob-overlay" onclick="closeMobileSidebar()"></div>
@@ -66,6 +67,7 @@
 <script src="assets/js/analytics.js?v=<?= filemtime('assets/js/analytics.js') ?>"></script>
 <script src="assets/js/inventory.js?v=<?= filemtime('assets/js/inventory.js') ?>"></script>
 <script src="assets/js/settings.js?v=<?= filemtime('assets/js/settings.js') ?>"></script>
+<script src="assets/js/setup-wizard.js?v=<?= filemtime('assets/js/setup-wizard.js') ?>"></script>
 
 </body>
 </html>
