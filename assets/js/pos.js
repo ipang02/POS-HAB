@@ -369,7 +369,7 @@ const POS = {
     this.calcChange();
   },
 
-  confirmPayment() {
+  async confirmPayment() {
     const totalStr = document.getElementById('pay-total')?.textContent || '0';
     const total    = parseInt(totalStr.replace(/[^0-9]/g, '')) || 0;
 
@@ -415,8 +415,14 @@ const POS = {
       Customers.findOrCreate(customer, payPhone);
     }
 
+    // Save to server first — receipt only shown on success
+    const saved = await API.saveTransaction(trx);
+    if (!saved.ok) {
+      showToast('Payment failed to save. Please try again.', 'error');
+      return;
+    }
     AppData.transactions.unshift(trx);
-    AppData.save('transactions');
+    StorageManager.save('transactions', AppData.transactions);
 
     // Auto-deduct stock for product items
     this.cart.filter(c => c.type === 'product').forEach(c => {
