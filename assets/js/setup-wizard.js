@@ -40,8 +40,7 @@ const SetupWizard = {
 
   done() {
     this._close();
-    sessionStorage.removeItem('hab_role');
-    location.reload();
+    Auth.lock();
   },
 
   // ── Validation ──────────────────────────────────────────────
