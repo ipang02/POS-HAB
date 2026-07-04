@@ -244,3 +244,19 @@ SET FOREIGN_KEY_CHECKS = 1;
 --   branches, services, barbers, appointments, transactions,
 --   transaction_items, inventory, queue, branch_hours, settings
 -- ============================================================
+
+-- ── Table: app_data (blob store for POS config data) ─────────
+CREATE TABLE IF NOT EXISTS `app_data` (
+  `data_key`   VARCHAR(50)  NOT NULL,
+  `data_value` LONGTEXT     NOT NULL,
+  `updated_at` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+                            ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`data_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Schema patches (run after base schema if upgrading) ───────
+ALTER TABLE `transactions`
+  ADD COLUMN IF NOT EXISTS `customer_phone` VARCHAR(20) DEFAULT NULL AFTER `customer`;
+
+ALTER TABLE `transaction_items`
+  ADD COLUMN IF NOT EXISTS `commission_rm` DECIMAL(8,2) DEFAULT NULL;
