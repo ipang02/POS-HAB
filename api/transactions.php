@@ -22,10 +22,9 @@ $method = $_SERVER['REQUEST_METHOD'];
 // ── DELETE: clear all transactions ───────────────────────────
 if ($method === 'DELETE') {
     $conn->query("SET FOREIGN_KEY_CHECKS = 0");
-    $conn->query("DELETE FROM transaction_items");
-    $conn->query("DELETE FROM transactions");
+    $ok = $conn->query("DELETE FROM transaction_items") && $conn->query("DELETE FROM transactions");
     $conn->query("SET FOREIGN_KEY_CHECKS = 1");
-    echo json_encode(['ok' => true]);
+    echo json_encode(['ok' => (bool)$ok]);
     exit;
 }
 
@@ -114,7 +113,7 @@ if ($method === 'POST') {
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
     $stmt->bind_param(
-        'siissiidsdss',
+        'sisssiidsdss',
         $id, $branchId, $customer, $customerPhone, $barberId,
         $discount, $tax, $total, $method_pay, $tendered, $date, $time
     );
@@ -137,6 +136,15 @@ if ($method === 'POST') {
          VALUES (?, ?, ?, ?, ?)"
     );
 
+    if (!$stmtC || !$stmtN) {
+        if ($stmtC) $stmtC->close();
+        if ($stmtN) $stmtN->close();
+        $conn->query("SET FOREIGN_KEY_CHECKS = 1");
+        http_response_code(500);
+        echo json_encode(['ok' => false, 'error' => 'Item prepare failed: ' . $conn->error]);
+        exit;
+    }
+
     foreach ($services as $svc) {
         $type  = $svc['type']  ?? 'service';
         $name  = $svc['name']  ?? '';
@@ -146,10 +154,18 @@ if ($method === 'POST') {
         if (isset($svc['commissionRM'])) {
             $comm = (float)$svc['commissionRM'];
             $stmtC->bind_param('sssidd', $id, $type, $name, $qty, $price, $comm);
-            $stmtC->execute();
+            $itemOk = $stmtC->execute();
         } else {
             $stmtN->bind_param('sssid', $id, $type, $name, $qty, $price);
-            $stmtN->execute();
+            $itemOk = $stmtN->execute();
+        }
+        if (!$itemOk) {
+            $stmtC->close();
+            $stmtN->close();
+            $conn->query("SET FOREIGN_KEY_CHECKS = 1");
+            http_response_code(500);
+            echo json_encode(['ok' => false, 'error' => 'Item insert failed: ' . $conn->error]);
+            exit;
         }
     }
     $stmtC->close();
