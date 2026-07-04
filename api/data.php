@@ -7,6 +7,8 @@
 // ============================================================
 require '../config.php';
 
+header('Content-Type: application/json; charset=utf-8');
+
 // ── Auth ─────────────────────────────────────────────────────
 $token = $_SERVER['HTTP_X_API_TOKEN'] ?? '';
 if (!defined('API_TOKEN') || $token !== API_TOKEN) {
@@ -14,8 +16,6 @@ if (!defined('API_TOKEN') || $token !== API_TOKEN) {
     echo json_encode(['error' => 'Unauthorized']);
     exit;
 }
-
-header('Content-Type: application/json; charset=utf-8');
 $method = $_SERVER['REQUEST_METHOD'];
 
 // ── POST: upsert one blob key ─────────────────────────────────
