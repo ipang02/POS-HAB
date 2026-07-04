@@ -221,7 +221,7 @@ const Appointments = {
     const valEl   = document.getElementById('appt-effective-price-val');
     if (!priceEl || !valEl) return;
     if (!svc) { priceEl.classList.add('hidden'); return; }
-    valEl.textContent = formatRp(resolveBookingPrice(svc, barb));
+    valEl.textContent = formatRp(resolvePrice(svc, barb));
     priceEl.classList.remove('hidden');
   },
 
@@ -242,7 +242,7 @@ const Appointments = {
 
     const svc  = getServiceById(serviceId);
     const barb = getBarberById(barberId);
-    const bookedPrice = svc ? resolveBookingPrice(svc, barb) : 0;
+    const bookedPrice = svc ? resolvePrice(svc, barb) : 0;
 
     if (editId) {
       const idx = AppData.appointments.findIndex(a => a.id === editId);
@@ -346,7 +346,7 @@ const Appointments = {
       showToast('Service no longer exists — cannot process payment', 'error');
       return;
     }
-    const price = a.bookedPrice ?? resolveBookingPrice(svc, barb);
+    const price = a.bookedPrice ?? resolvePrice(svc, barb);
     closeModal('modal-appt-detail');
     POS.prefill({ barberId: a.barberId, serviceId: a.serviceId, price, customer: a.customer });
     navigate('pos');

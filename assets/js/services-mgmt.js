@@ -165,7 +165,6 @@ const ServicesMgmt = {
     document.getElementById('svc-icon').value     = s.icon || 'fa-scissors';
     document.getElementById('svc-desc').value     = s.desc || '';
     document.getElementById('svc-active').checked = s.is_active !== false;
-    document.getElementById('svc-booking-price').value = s.bookingPrice ?? '';
     const hasTier = s.tierPrices != null;
     document.getElementById('svc-tier-enabled').checked = hasTier;
     document.getElementById('svc-tier-prices').classList.toggle('hidden', !hasTier);
@@ -211,13 +210,6 @@ const ServicesMgmt = {
     const desc     = document.getElementById('svc-desc').value.trim();
     const isActive = document.getElementById('svc-active').checked;
 
-    const bookingPriceRaw = parseFloat(document.getElementById('svc-booking-price').value);
-    const bookingPrice    = isNaN(bookingPriceRaw) ? null : bookingPriceRaw;
-    if (bookingPrice !== null && bookingPrice < 0) {
-      showToast('Booking price cannot be negative', 'error');
-      return;
-    }
-
     const tierEnabled = document.getElementById('svc-tier-enabled').checked;
     let tierPrices = null;
     if (tierEnabled) {
@@ -240,11 +232,11 @@ const ServicesMgmt = {
     if (editId) {
       const idx = AppData.services.findIndex(s => s.id === editId);
       if (idx > -1) {
-        AppData.services[idx] = { ...AppData.services[idx], name, price, duration, cat, icon, desc, is_active: isActive, tierPrices, bookingPrice };
+        AppData.services[idx] = { ...AppData.services[idx], name, price, duration, cat, icon, desc, is_active: isActive, tierPrices };
         showToast(`"${name}" updated successfully`, 'success');
       }
     } else {
-      AppData.services.push({ id: nextNumId(AppData.services), name, price, duration, cat, icon, desc, is_active: isActive, tierPrices, bookingPrice, branchId: App.currentBranch });
+      AppData.services.push({ id: nextNumId(AppData.services), name, price, duration, cat, icon, desc, is_active: isActive, tierPrices, branchId: App.currentBranch });
       showToast(`"${name}" added to services`, 'success');
     }
 

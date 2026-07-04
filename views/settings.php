@@ -34,10 +34,14 @@
           <p class="text-xs text-white/35">Affects all POS calculations</p>
         </div>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div>
           <label class="text-xs text-white/45 mb-1.5 block font-medium">Tax Rate (%)</label>
-          <input type="number" id="set-tax" min="0" max="100" placeholder="11" class="inp">
+          <input type="number" id="set-tax" min="0" max="100" placeholder="6" class="inp">
+        </div>
+        <div>
+          <label class="text-xs text-white/45 mb-1.5 block font-medium">Booking Fee (RM)</label>
+          <input type="number" id="set-booking-fee" min="0" step="0.50" placeholder="10" class="inp">
         </div>
         <div>
           <label class="text-xs text-white/45 mb-1.5 block font-medium">Currency Symbol</label>

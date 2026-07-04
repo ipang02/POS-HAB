@@ -9,6 +9,7 @@ const Settings = {
 
     // Global fields
     this._set('set-tax',            s.taxRate);
+    this._set('set-booking-fee',    s.bookingFee ?? 10);
     this._set('set-currency',       s.currency);
     this._set('set-low-stock',      s.lowStockThreshold);
     this._set('set-receipt-footer', s.receiptFooter);
@@ -33,8 +34,12 @@ const Settings = {
     const taxRaw = document.getElementById('set-tax')?.value;
     const taxRate = taxRaw !== '' && taxRaw != null ? parseFloat(taxRaw) : 6;
 
+    const bookingFeeRaw = document.getElementById('set-booking-fee')?.value;
+    const bookingFee = bookingFeeRaw !== '' && bookingFeeRaw != null ? parseFloat(bookingFeeRaw) : 10;
+
     Object.assign(AppData.settings, {
       taxRate,
+      bookingFee,
       currency:          document.getElementById('set-currency')?.value?.trim()       || 'RM',
       lowStockThreshold: parseInt(document.getElementById('set-low-stock')?.value)    || 5,
       receiptFooter:     document.getElementById('set-receipt-footer')?.value?.trim() || '',

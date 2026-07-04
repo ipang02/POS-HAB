@@ -25,6 +25,7 @@ const DEFAULT_DATA = {
     email:         '',
     instagram:     '',
     taxRate:       6,
+    bookingFee:    10,
     currency:      'RM',
     lowStockThreshold: 5,
     receiptFooter: 'Terima kasih kerana memilih HAB Barbershop!',
@@ -170,10 +171,6 @@ function resolvePrice(svc, barber) {
   return svc?.price ?? 0;
 }
 
-function resolveBookingPrice(svc, barber) {
-  if (svc?.bookingPrice != null) return svc.bookingPrice;
-  return resolvePrice(svc, barber);
-}
 
 function formatDate(dateStr) {
   if (!dateStr) return '—';

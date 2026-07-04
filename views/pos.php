@@ -107,6 +107,16 @@
       <!-- Totals & Pay -->
       <div class="px-5 py-4 border-t border-white/6 space-y-2.5 flex-shrink-0">
 
+        <!-- Booking Fee -->
+        <div class="flex items-center justify-between">
+          <label class="text-xs text-white/40">Booking Fee</label>
+          <button id="btn-booking-fee" onclick="POS.toggleBookingFee()"
+            class="text-xs px-3 py-1 rounded-lg border transition-colors font-semibold"
+            style="border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.35)">
+            + Add
+          </button>
+        </div>
+
         <!-- Discount -->
         <div class="flex items-center gap-2">
           <label class="text-xs text-white/40 w-20 flex-shrink-0">Discount %</label>
@@ -126,6 +136,10 @@
         <div class="flex justify-between text-xs text-white/38">
           <span>Tax (<span id="pos-tax-pct">6</span>% SST)</span>
           <span id="pos-tax-amt">RM 0</span>
+        </div>
+        <div id="pos-booking-fee-row" class="flex justify-between text-xs text-white/38 hidden">
+          <span>Booking Fee</span>
+          <span id="pos-booking-fee-amt">RM 0</span>
         </div>
 
         <div class="flex justify-between items-center border-t border-white/8 pt-3">

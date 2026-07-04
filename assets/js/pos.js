@@ -9,6 +9,7 @@ const POS = {
   searchQuery: '',
   activePanel: 'services',   // 'services' | 'products'
   payMethod: 'cash',
+  bookingFeeAdded: false,
   _prefillCustomer: '',
   _prefillBarberId: null,
 
@@ -223,12 +224,34 @@ const POS = {
   },
 
   clearCart() {
-    if (!this.cart.length) return;
+    if (!this.cart.length && !this.bookingFeeAdded) return;
     this.cart = [];
+    this.bookingFeeAdded = false;
     document.getElementById('pos-discount').value = '0';
+    this._updateBookingFeeBtn();
     this._refreshGrids();
     this.renderCart();
     this.recalc();
+  },
+
+  toggleBookingFee() {
+    this.bookingFeeAdded = !this.bookingFeeAdded;
+    this._updateBookingFeeBtn();
+    this.recalc();
+  },
+
+  _updateBookingFeeBtn() {
+    const btn = document.getElementById('btn-booking-fee');
+    if (!btn) return;
+    if (this.bookingFeeAdded) {
+      btn.textContent = '✓ Added';
+      btn.style.borderColor = 'rgba(201,168,76,.5)';
+      btn.style.color = '#C9A84C';
+    } else {
+      btn.textContent = '+ Add';
+      btn.style.borderColor = 'rgba(255,255,255,.12)';
+      btn.style.color = 'rgba(255,255,255,.35)';
+    }
   },
 
   _refreshGrids() {
@@ -281,13 +304,14 @@ const POS = {
   },
 
   recalc() {
-    const subtotal  = this.cart.reduce((s, c) => s + c.price * c.qty, 0);
-    const discPct   = parseFloat(document.getElementById('pos-discount')?.value || 0);
-    const discAmt   = Math.round(subtotal * discPct / 100);
-    const afterDisc = subtotal - discAmt;
-    const taxRate   = AppData.settings.taxRate != null ? AppData.settings.taxRate : 6;
-    const taxAmt    = Math.round(afterDisc * taxRate / 100);
-    const total     = afterDisc + taxAmt;
+    const subtotal   = this.cart.reduce((s, c) => s + c.price * c.qty, 0);
+    const discPct    = parseFloat(document.getElementById('pos-discount')?.value || 0);
+    const discAmt    = Math.round(subtotal * discPct / 100);
+    const afterDisc  = subtotal - discAmt;
+    const taxRate    = AppData.settings.taxRate != null ? AppData.settings.taxRate : 6;
+    const taxAmt     = Math.round(afterDisc * taxRate / 100);
+    const bookingFee = this.bookingFeeAdded ? (AppData.settings.bookingFee ?? 10) : 0;
+    const total      = afterDisc + taxAmt + bookingFee;
 
     document.getElementById('pos-subtotal').textContent = formatRp(subtotal);
     document.getElementById('pos-disc-amt').textContent = formatRp(discAmt);
@@ -295,8 +319,13 @@ const POS = {
     document.getElementById('pos-tax-amt').textContent  = formatRp(taxAmt);
     document.getElementById('pos-total').textContent    = formatRp(total);
 
+    const feeRow = document.getElementById('pos-booking-fee-row');
+    const feeAmt = document.getElementById('pos-booking-fee-amt');
+    if (feeRow) feeRow.classList.toggle('hidden', !this.bookingFeeAdded);
+    if (feeAmt) feeAmt.textContent = formatRp(bookingFee);
+
     const payBtn = document.getElementById('btn-pay');
-    if (payBtn) payBtn.disabled = this.cart.length === 0;
+    if (payBtn) payBtn.disabled = this.cart.length === 0 && !this.bookingFeeAdded;
   },
 
   updateTaxDisplay() {
@@ -388,15 +417,20 @@ const POS = {
     const taxAmt   = Math.round(afterDisc * (AppData.settings.taxRate != null ? AppData.settings.taxRate : 6) / 100);
     const tendered = this.payMethod === 'cash' ? parseFloat(document.getElementById('cash-tendered')?.value || 0) : 0;
 
+    const cartServices = this.cart.map(c => ({
+      name: c.name, qty: c.qty, price: c.price, type: c.type,
+      ...(c.type === 'product' && c.commissionRM ? { commissionRM: c.commissionRM } : {})
+    }));
+    if (this.bookingFeeAdded) {
+      cartServices.push({ name: 'Booking Fee', qty: 1, price: AppData.settings.bookingFee ?? 10, type: 'booking' });
+    }
+
     const trx = {
       id:       genId('TRX'),
       customer,
       barberId,
       branchId: App.currentBranch || 1,
-      services: this.cart.map(c => ({
-        name: c.name, qty: c.qty, price: c.price, type: c.type,
-        ...(c.type === 'product' && c.commissionRM ? { commissionRM: c.commissionRM } : {})
-      })),
+      services: cartServices,
       discount: discPct,
       tax:      AppData.settings.taxRate != null ? AppData.settings.taxRate : 6,
       total,

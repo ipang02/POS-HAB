@@ -106,16 +106,6 @@
           </label>
         </div>
 
-        <!-- Booking Price (optional) -->
-        <div class="border-t border-white/6 pt-4">
-          <label class="text-xs text-white/45 mb-1.5 block font-medium">Booking Price (RM) <span class="text-white/25">(optional)</span></label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm font-semibold">RM</span>
-            <input type="number" id="svc-booking-price" min="0" step="0.50" placeholder="Same as walk-in price" class="inp pl-10">
-          </div>
-          <p class="text-[10px] text-white/30 mt-1">If set, appointments use this price instead of the walk-in price</p>
-        </div>
-
         <!-- Tier Pricing toggle -->
         <div class="flex items-center justify-between py-2 border-t border-white/6 pt-4">
           <div>
