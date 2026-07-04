@@ -142,6 +142,53 @@ const DATA_VERSION = '5'; // v5 = Kedai Lalat + branch CRUD
   }
 })();
 
+// ── API Client ───────────────────────────────────────────────
+const API = {
+  _token: window.HAB_API_TOKEN || '',
+
+  _h() {
+    return { 'Content-Type': 'application/json', 'X-API-Token': this._token };
+  },
+
+  async fetchAll() {
+    const res = await fetch('api/data.php', { headers: this._h() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  },
+
+  async fetchPoll() {
+    const res = await fetch('api/data.php?mode=poll', { headers: this._h() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  },
+
+  saveBlob(key, data) {
+    fetch('api/data.php', {
+      method: 'POST',
+      headers: this._h(),
+      body: JSON.stringify({ key, value: JSON.stringify(data) })
+    }).catch(() => {});
+  },
+
+  async saveTransaction(trx) {
+    try {
+      const res = await fetch('api/transactions.php', {
+        method: 'POST',
+        headers: this._h(),
+        body: JSON.stringify(trx)
+      });
+      if (!res.ok) return { ok: false };
+      return res.json();
+    } catch (e) {
+      return { ok: false };
+    }
+  },
+
+  clearTransactions() {
+    fetch('api/transactions.php', { method: 'DELETE', headers: this._h() }).catch(() => {});
+  }
+};
+
 // ── StorageManager ───────────────────────────────────────────
 const StorageManager = {
   KEY_PREFIX: 'hab_',
@@ -174,7 +221,10 @@ const AppData = {
   branches:     StorageManager.load('branches',     DEFAULT_DATA.branches),
   settings:     StorageManager.load('settings',     DEFAULT_DATA.settings),
 
-  save(key) { StorageManager.save(key, this[key]); },
+  save(key) {
+    StorageManager.save(key, this[key]);
+    if (key !== 'transactions') API.saveBlob(key, this[key]);
+  },
   saveAll() {
     ['services','barbers','appointments','transactions','inventory','queue','branches','settings','customers']
       .forEach(k => StorageManager.save(k, this[k]));
@@ -454,7 +504,8 @@ document.addEventListener('keydown', e => {
 
 // ── Application Init ─────────────────────────────────────────
 const App = {
-  currentBranch: 1, // set in init() from storage
+  currentBranch: 1,
+  lastSyncAt: null,
 
   setBranch(id) {
     this.currentBranch = id;
@@ -463,10 +514,26 @@ const App = {
     _renderBranchDropdown();
     document.getElementById('branch-dropdown')?.classList.add('hidden');
     showToast(`Switched to ${currentBranchName()}`, 'info', 2000);
-    Router.go(Router.current); // refresh current view with new branch
+    Router.go(Router.current);
   },
 
-  init() {
+  async init() {
+    this._showLoader(true);
+    try {
+      const data = await API.fetchAll();
+      if (!data.seeded) {
+        await this._seedMySQL();
+        const fresh = await API.fetchAll();
+        this._hydrateFromAPI(fresh);
+      } else {
+        this._hydrateFromAPI(data);
+      }
+      this._showOfflineBanner(false);
+    } catch (e) {
+      // API unreachable — fall back to localStorage (AppData already hydrated at parse time)
+      this._showOfflineBanner(true);
+    }
+    this._showLoader(false);
     Auth.init();
     this.currentBranch = StorageManager.load('currentBranch', 1);
     if (AppData.services.some(s => s.branchId == null)) {
@@ -479,6 +546,106 @@ const App = {
     Dashboard.init();
     Inventory.checkLowStock();
     document.getElementById('page-sub').textContent = Router.pages.dashboard.sub();
+    this._startPolling();
+  },
+
+  _hydrateFromAPI(data) {
+    const BLOB_KEYS = ['services','barbers','appointments','inventory','queue','customers','settings','branches'];
+    BLOB_KEYS.forEach(k => {
+      if (data[k] !== undefined) {
+        AppData[k] = data[k];
+        StorageManager.save(k, data[k]);
+      }
+    });
+    if (data.transactions !== undefined) {
+      AppData.transactions = data.transactions;
+      StorageManager.save('transactions', data.transactions);
+    }
+    this.lastSyncAt = new Date().toISOString();
+  },
+
+  async _seedMySQL() {
+    const BLOB_KEYS = ['services','barbers','appointments','inventory','queue','customers','settings','branches'];
+    for (const k of BLOB_KEYS) {
+      await fetch('api/data.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Token': API._token },
+        body: JSON.stringify({ key: k, value: JSON.stringify(AppData[k]) })
+      }).catch(() => {});
+    }
+    for (const trx of AppData.transactions) {
+      await API.saveTransaction(trx).catch(() => {});
+    }
+  },
+
+  _startPolling() {
+    setInterval(async () => {
+      try {
+        const data = await API.fetchPoll();
+        const BLOB_KEYS = ['services','barbers','appointments','inventory','queue','customers','settings','branches'];
+        let changed = false;
+
+        BLOB_KEYS.forEach(k => {
+          if (data.updated_at?.[k] && this.lastSyncAt &&
+              new Date(data.updated_at[k]) > new Date(this.lastSyncAt)) {
+            AppData[k] = data[k];
+            StorageManager.save(k, data[k]);
+            changed = true;
+          }
+        });
+
+        // Merge today's fresh transactions — keep historical, replace today's
+        if (data.transactions !== undefined) {
+          const todayStr = today();
+          const historical = AppData.transactions.filter(t => t.date !== todayStr);
+          AppData.transactions = [...data.transactions, ...historical];
+          StorageManager.save('transactions', AppData.transactions);
+          changed = true;
+        }
+
+        this.lastSyncAt = new Date().toISOString();
+        this._showOfflineBanner(false);
+        if (changed) this._triggerRerender();
+      } catch (e) {
+        this._showOfflineBanner(true);
+      }
+    }, 30000);
+  },
+
+  _triggerRerender() {
+    const view = Router.current;
+    if (view === 'pos') {
+      if (POS.cart.length === 0) {
+        POS.renderServiceGrid?.();
+        POS.renderProductGrid?.();
+      }
+      return;
+    }
+    Router.go(view);
+  },
+
+  _showLoader(show) {
+    let el = document.getElementById('api-loader');
+    if (!el && show) {
+      el = document.createElement('div');
+      el.id = 'api-loader';
+      el.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(9,11,17,.92)';
+      el.innerHTML = '<div style="color:#fff;font-size:14px;font-family:Inter,sans-serif;display:flex;align-items:center;gap:10px"><i class="fa-solid fa-circle-notch fa-spin" style="color:#C9A84C"></i>Connecting...</div>';
+      document.body.appendChild(el);
+    }
+    if (el) el.style.display = show ? 'flex' : 'none';
+  },
+
+  _showOfflineBanner(show) {
+    let el = document.getElementById('offline-banner');
+    if (!el && show) {
+      el = document.createElement('div');
+      el.id = 'offline-banner';
+      el.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9000;background:#b45309;color:#fff;padding:6px 16px;border-radius:8px;font-size:12px;font-family:Inter,sans-serif;white-space:nowrap';
+      el.textContent = 'Offline — using local data';
+      document.body.appendChild(el);
+    }
+    if (el) el.style.display = show ? 'block' : 'none';
   }
 };
 
