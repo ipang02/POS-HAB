@@ -172,7 +172,18 @@ const POS = {
   },
 
   // ── Cart ────────────────────────────────────────────────────
+  _requireBarber() {
+    const id = parseInt(document.getElementById('pos-barber')?.value) || 0;
+    if (!id) {
+      showToast('Please select a barber first', 'warning');
+      document.getElementById('pos-barber')?.focus();
+      return false;
+    }
+    return true;
+  },
+
   addToCart(type, id) {
+    if (!this._requireBarber()) return;
     if (type === 'service') {
       const svc = getServiceById(id);
       if (!svc || svc.is_active === false) return;
@@ -235,6 +246,7 @@ const POS = {
   },
 
   toggleBookingFee() {
+    if (!this.bookingFeeAdded && !this._requireBarber()) return;
     this.bookingFeeAdded = !this.bookingFeeAdded;
     this._updateBookingFeeBtn();
     this.recalc();
@@ -337,7 +349,8 @@ const POS = {
 
   // ── Payment ─────────────────────────────────────────────────
   openPayment() {
-    if (!this.cart.length) return;
+    if (!this._requireBarber()) return;
+    if (!this.cart.length && !this.bookingFeeAdded) return;
     const subtotal  = this.cart.reduce((s, c) => s + c.price * c.qty, 0);
     const discPct   = parseFloat(document.getElementById('pos-discount')?.value || 0);
     const discAmt   = Math.round(subtotal * discPct / 100);
