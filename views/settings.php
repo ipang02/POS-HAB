@@ -194,16 +194,6 @@
             </div>
           </div>
 
-          <!-- Initial Setup -->
-          <div class="pt-2 border-t border-white/6">
-            <p class="text-xs font-semibold text-white/70 mb-1">Initial Setup Wizard</p>
-            <p class="text-xs text-white/35 mb-3">Clear all demo data and configure the system from scratch. This action cannot be undone.</p>
-            <button onclick="SetupWizard.open()"
-              class="text-xs px-4 py-2 rounded-lg font-semibold border transition-colors hover:bg-red-500/10"
-              style="border-color:rgba(239,68,68,0.4);color:#ef4444">
-              <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Run Setup Wizard
-            </button>
-          </div>
 
         </div>
       </div>
