@@ -140,7 +140,6 @@ const ServicesMgmt = {
     document.getElementById('svc-icon').value     = 'fa-scissors';
     document.getElementById('svc-desc').value     = '';
     document.getElementById('svc-active').checked = true;
-    document.getElementById('svc-booking-price').value = '';
     document.getElementById('svc-tier-enabled').checked = false;
     document.getElementById('svc-tier-prices').classList.add('hidden');
     document.getElementById('svc-tier-junior').value = '';
