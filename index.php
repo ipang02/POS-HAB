@@ -55,7 +55,7 @@ require 'config.php';
 <div id="print-receipt"></div>
 
 <!-- ══ Scripts (order matters) ════════════════════════════════ -->
-<script>window.HAB_API_TOKEN = '<?= htmlspecialchars(defined('API_TOKEN') ? API_TOKEN : '', ENT_QUOTES) ?>';</script>
+<script>window.HAB_API_TOKEN = '<?= htmlspecialchars(defined('API_TOKEN') ? API_TOKEN : '', ENT_QUOTES, 'UTF-8') ?>';</script>
 <script src="assets/js/app.js?v=<?= filemtime('assets/js/app.js') ?>"></script>
 <script src="assets/js/auth.js?v=<?= filemtime('assets/js/auth.js') ?>"></script>
 <script src="assets/js/customers.js?v=<?= filemtime('assets/js/customers.js') ?>"></script>
