@@ -3,8 +3,7 @@
 // HAB Barbershop — POS System v1.0
 // Hostinger Deployment Ready | Demo Mode (localStorage)
 // ============================================================
-// Phase 2 — uncomment to connect MySQL:
-// require 'config.php'; // Phase 2: uncomment when MySQL is ready
+require 'config.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -56,6 +55,7 @@
 <div id="print-receipt"></div>
 
 <!-- ══ Scripts (order matters) ════════════════════════════════ -->
+<script>window.HAB_API_TOKEN = '<?= htmlspecialchars(defined('API_TOKEN') ? API_TOKEN : '', ENT_QUOTES) ?>';</script>
 <script src="assets/js/app.js?v=<?= filemtime('assets/js/app.js') ?>"></script>
 <script src="assets/js/auth.js?v=<?= filemtime('assets/js/auth.js') ?>"></script>
 <script src="assets/js/customers.js?v=<?= filemtime('assets/js/customers.js') ?>"></script>

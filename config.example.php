@@ -15,3 +15,6 @@ if ($conn->connect_error) {
     die(json_encode(['error' => 'Database connection failed.']));
 }
 $conn->set_charset('utf8mb4');
+
+// ── API Token (shared secret — change this) ──────────────────
+define('API_TOKEN', 'change-this-to-a-32-char-random-string');
