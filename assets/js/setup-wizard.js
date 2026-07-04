@@ -133,6 +133,7 @@ const SetupWizard = {
     AppData.services     = [];
     AppData.appointments = [];
     AppData.transactions = [];
+    if (typeof API !== 'undefined') API.clearTransactions();
     AppData.inventory    = [];
     AppData.queue        = [];
     AppData.customers    = [];
