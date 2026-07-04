@@ -30,7 +30,8 @@ const Settings = {
   _setCheck(id, val) { const el = document.getElementById(id); if (el) el.checked = !!val; },
 
   save() {
-    const taxRate = parseFloat(document.getElementById('set-tax')?.value) || 6;
+    const taxRaw = document.getElementById('set-tax')?.value;
+    const taxRate = taxRaw !== '' && taxRaw != null ? parseFloat(taxRaw) : 6;
 
     Object.assign(AppData.settings, {
       taxRate,
