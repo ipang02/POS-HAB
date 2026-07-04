@@ -566,16 +566,26 @@ const App = {
 
   async _seedMySQL() {
     const BLOB_KEYS = ['services','barbers','appointments','inventory','queue','customers','settings','branches'];
+    let failed = false;
     for (const k of BLOB_KEYS) {
-      await fetch('api/data.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-API-Token': API._token },
-        body: JSON.stringify({ key: k, value: JSON.stringify(AppData[k]) })
-      }).catch(() => {});
+      try {
+        const res = await fetch('api/data.php', {
+          method: 'POST',
+          headers: API._h(),
+          body: JSON.stringify({ key: k, value: JSON.stringify(AppData[k]) })
+        });
+        if (!res.ok) failed = true;
+      } catch { failed = true; }
     }
-    for (const trx of AppData.transactions) {
-      await API.saveTransaction(trx).catch(() => {});
+    // Only seed real transactions — skip demo data
+    const isDemo = AppData.transactions.length > 0 && AppData.transactions[0].id === 'TRX-001';
+    if (!isDemo) {
+      for (const trx of AppData.transactions) {
+        const r = await API.saveTransaction(trx);
+        if (!r.ok) failed = true;
+      }
     }
+    if (failed) throw new Error('Seed incomplete');
   },
 
   _startPolling() {
@@ -598,7 +608,8 @@ const App = {
         if (data.transactions !== undefined) {
           const todayStr = today();
           const historical = AppData.transactions.filter(t => t.date !== todayStr);
-          AppData.transactions = [...data.transactions, ...historical];
+          const todayFromAPI = (data.transactions || []).filter(t => t.date === todayStr);
+          AppData.transactions = [...todayFromAPI, ...historical];
           StorageManager.save('transactions', AppData.transactions);
           changed = true;
         }
@@ -615,7 +626,7 @@ const App = {
   _triggerRerender() {
     const view = Router.current;
     if (view === 'pos') {
-      if (POS.cart.length === 0) {
+      if ((POS?.cart?.length ?? 0) === 0) {
         POS.renderServiceGrid?.();
         POS.renderProductGrid?.();
       }
