@@ -313,7 +313,7 @@ const POS = {
     const discPct   = parseFloat(document.getElementById('pos-discount')?.value || 0);
     const discAmt   = Math.round(subtotal * discPct / 100);
     const afterDisc = subtotal - discAmt;
-    const taxAmt    = Math.round(afterDisc * (AppData.settings.taxRate || 6) / 100);
+    const taxAmt    = Math.round(afterDisc * (AppData.settings.taxRate != null ? AppData.settings.taxRate : 6) / 100);
     const total     = afterDisc + taxAmt;
 
     document.getElementById('pay-subtotal').textContent  = formatRp(subtotal);
@@ -385,7 +385,7 @@ const POS = {
     const subtotal = this.cart.reduce((s, c) => s + c.price * c.qty, 0);
     const discAmt  = Math.round(subtotal * discPct / 100);
     const afterDisc = subtotal - discAmt;
-    const taxAmt   = Math.round(afterDisc * (AppData.settings.taxRate || 6) / 100);
+    const taxAmt   = Math.round(afterDisc * (AppData.settings.taxRate != null ? AppData.settings.taxRate : 6) / 100);
     const tendered = this.payMethod === 'cash' ? parseFloat(document.getElementById('cash-tendered')?.value || 0) : 0;
 
     const trx = {
@@ -398,7 +398,7 @@ const POS = {
         ...(c.type === 'product' && c.commissionRM ? { commissionRM: c.commissionRM } : {})
       })),
       discount: discPct,
-      tax:      AppData.settings.taxRate || 6,
+      tax:      AppData.settings.taxRate != null ? AppData.settings.taxRate : 6,
       total,
       method:   this.payMethod,
       tendered,
