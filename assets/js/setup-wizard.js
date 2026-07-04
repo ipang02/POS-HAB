@@ -204,6 +204,10 @@ const SetupWizard = {
       });
     });
 
+    // Reset active branch to 1 (wizard only configures branch 1)
+    App.currentBranch = 1;
+    StorageManager.save('currentBranch', 1);
+
     // Save all changed keys
     ['barbers','services','appointments','transactions','inventory','queue','customers','settings','branches']
       .forEach(k => AppData.save(k));

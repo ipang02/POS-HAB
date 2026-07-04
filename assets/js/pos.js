@@ -285,7 +285,7 @@ const POS = {
     const discPct   = parseFloat(document.getElementById('pos-discount')?.value || 0);
     const discAmt   = Math.round(subtotal * discPct / 100);
     const afterDisc = subtotal - discAmt;
-    const taxRate   = AppData.settings.taxRate || 6;
+    const taxRate   = AppData.settings.taxRate != null ? AppData.settings.taxRate : 6;
     const taxAmt    = Math.round(afterDisc * taxRate / 100);
     const total     = afterDisc + taxAmt;
 
@@ -301,7 +301,7 @@ const POS = {
 
   updateTaxDisplay() {
     const el = document.getElementById('pos-tax-pct');
-    if (el) el.textContent = AppData.settings.taxRate || 6;
+    if (el) el.textContent = AppData.settings.taxRate != null ? AppData.settings.taxRate : 6;
   },
 
   filterServices() { this.handleSearch(); },
