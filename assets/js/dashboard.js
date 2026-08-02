@@ -8,8 +8,8 @@ const Dashboard = {
   init() {
     this.renderKPIs();
     this.renderRecentTrx();
-    this.renderQueue();
     this.initCharts();
+    QueueManager.init();
   },
 
   renderKPIs() {
@@ -70,31 +70,6 @@ const Dashboard = {
     }).join('');
   },
 
-  renderQueue() {
-    const list  = document.getElementById('queue-list');
-    const empty = document.getElementById('queue-empty');
-    const lbl   = document.getElementById('queue-count-lbl');
-    const q = AppData.queue;
-
-    lbl.textContent = q.length + ' waiting';
-    list.classList.toggle('hidden', q.length === 0);
-    empty.classList.toggle('hidden', q.length > 0);
-
-    list.innerHTML = q.map((item, i) => `
-      <div class="flex items-center gap-3 glass rounded-xl px-3 py-2.5">
-        <div class="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold text-white/80 flex-shrink-0" style="background:rgba(201,168,76,.18)">
-          ${i + 1}
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-white truncate">${item.name}</p>
-          <p class="text-xs text-white/35">${item.time} · ${item.service || 'Walk-in'}</p>
-        </div>
-        <button onclick="Dashboard.removeFromQueue(${i})" class="text-white/25 hover:text-red-400 transition-colors text-xs">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>`
-    ).join('');
-  },
 
   initCharts() {
     Chart.defaults.color = '#6B6B6B';
@@ -217,23 +192,6 @@ const Dashboard = {
   }
 };
 
-// ── Queue ────────────────────────────────────────────────────
-function addToQueue() {
-  const name = prompt('Customer name:');
-  if (!name || !name.trim()) return;
-  const service = prompt('Service (optional):') || '';
-  const now = new Date().toTimeString().slice(0,5);
-  AppData.queue.push({ name: name.trim(), service: service.trim(), time: now });
-  AppData.save('queue');
-  Dashboard.renderQueue();
-  showToast(`${name.trim()} added to queue`, 'success');
-}
-
-Dashboard.removeFromQueue = function(i) {
-  AppData.queue.splice(i, 1);
-  AppData.save('queue');
-  Dashboard.renderQueue();
-};
 
 // ── Shift Report ─────────────────────────────────────────────
 function openShiftReport() {

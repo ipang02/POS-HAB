@@ -96,7 +96,7 @@
           <h3 class="text-sm font-bold text-white">Walk-in Queue</h3>
           <p class="text-xs text-white/35 mt-0.5" id="queue-count-lbl">0 waiting</p>
         </div>
-        <button onclick="addToQueue()" class="btn-gold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1">
+        <button onclick="QueueManager.openAddModal()" class="btn-gold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1">
           <i class="fa-solid fa-plus text-[10px]"></i> Add
         </button>
       </div>
