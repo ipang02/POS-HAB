@@ -126,19 +126,6 @@ CREATE TABLE IF NOT EXISTS `inventory` (
   CONSTRAINT `fk_inv_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── Table: queue ─────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS `queue` (
-  `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `branch_id`   TINYINT UNSIGNED NOT NULL DEFAULT 1,
-  `name`        VARCHAR(100) NOT NULL,
-  `service`     VARCHAR(100) DEFAULT NULL,
-  `time`        TIME NOT NULL,
-  `date`        DATE NOT NULL,
-  `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_queue_branch_date` (`branch_id`, `date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ── Table: branch_hours ───────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `branch_hours` (
   `branch_id`  TINYINT UNSIGNED NOT NULL,
@@ -277,4 +264,20 @@ CREATE TABLE IF NOT EXISTS `shifts` (
   KEY `idx_shift_branch` (`branch_id`),
   UNIQUE KEY `uq_branch_date` (`branch_id`,`date`),
   CONSTRAINT `fk_shift_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Table: queue ──────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `queue` (
+  `id`           INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `branch_id`    TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  `session_date` DATE NOT NULL,
+  `name`         VARCHAR(100) NOT NULL,
+  `phone`        VARCHAR(20) NOT NULL,
+  `party_size`   TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  `status`       ENUM('waiting','serving','done') NOT NULL DEFAULT 'waiting',
+  `joined_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `served_at`    DATETIME DEFAULT NULL,
+  `done_at`      DATETIME DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_queue_branch_date` (`branch_id`, `session_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
