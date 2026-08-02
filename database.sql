@@ -268,11 +268,13 @@ CREATE TABLE IF NOT EXISTS `shifts` (
   `date`        DATE NOT NULL,
   `open_time`   TIME NOT NULL,
   `open_by`     VARCHAR(20) NOT NULL DEFAULT 'staff',
-  `open_float`  DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `open_float`  DECIMAL(10,2) UNSIGNED NOT NULL DEFAULT 0,
   `close_time`  TIME DEFAULT NULL,
-  `close_float` DECIMAL(10,2) DEFAULT NULL,
+  `close_float` DECIMAL(10,2) UNSIGNED DEFAULT NULL,
   `close_note`  VARCHAR(255) DEFAULT NULL,
   `status`      ENUM('open','closed') NOT NULL DEFAULT 'open',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_branch_date` (`branch_id`,`date`)
+  KEY `idx_shift_branch` (`branch_id`),
+  UNIQUE KEY `uq_branch_date` (`branch_id`,`date`),
+  CONSTRAINT `fk_shift_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
