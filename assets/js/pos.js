@@ -32,6 +32,11 @@ const POS = {
   },
 
   init() {
+    if (!App.session.isOpen) {
+      SessionManager.renderLockedScreen();
+      return;
+    }
+    SessionManager.renderStatusBar();
     this.renderBarberSelect();
     if (this._prefillBarberId) {
       const barberEl = document.getElementById('pos-barber');
