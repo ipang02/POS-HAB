@@ -126,6 +126,11 @@ const Auth = {
     const restricted = ['analytics', 'services', 'barbers', 'inventory', 'settings'];
     if (!restricted.includes(view)) return true;
     return (AppData?.settings?.staffAccess || {})[view] === true;
+  },
+
+  verifyPin(role, pin) {
+    const pins = AppData?.settings?.pins || { owner: '1234', staff: '0000' };
+    return pin === pins[role];
   }
 };
 
