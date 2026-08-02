@@ -227,5 +227,36 @@
       </div>
     </div>
 
+    <!-- Section: Walk-in Queue QR ─────────────────────── -->
+    <div class="card-section mb-5">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-9 h-9 rounded-xl bg-blue-500/14 flex items-center justify-center">
+          <i class="fa-solid fa-qrcode text-blue-400 text-sm"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white">Walk-in Queue QR</h3>
+          <p class="text-xs text-white/35">Customers scan this to join the queue from their phone</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-5 items-start">
+        <div id="qr-code-wrap" class="rounded-xl overflow-hidden flex-shrink-0 bg-white p-2"></div>
+        <div class="flex-1 min-w-0">
+          <label class="text-xs text-white/45 mb-1.5 block font-medium">Queue URL</label>
+          <div class="flex gap-2 mb-3">
+            <input id="queue-url-display" type="text" class="inp flex-1 text-xs" readonly>
+            <button onclick="Settings.copyQueueUrl()" class="btn-outline px-3 py-2 rounded-xl text-xs whitespace-nowrap">
+              <i class="fa-solid fa-copy mr-1"></i>Copy
+            </button>
+          </div>
+          <p class="text-xs text-white/30 mb-3">Display this QR at your shop entrance. Customers scan it to join the queue from their phone.</p>
+          <a id="qr-download-link" target="_blank"
+            class="inline-flex items-center gap-1.5 text-xs text-gold hover:opacity-75 transition-opacity">
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Open QR Image
+          </a>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>

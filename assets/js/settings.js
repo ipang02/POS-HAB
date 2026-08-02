@@ -25,6 +25,7 @@ const Settings = {
     // Render branch cards
     BranchConfig.renderCards();
     this._renderSecurity();
+    this.renderQRCode();
   },
 
   _set(id, val)      { const el = document.getElementById(id); if (el) el.value = val ?? ''; },
@@ -145,6 +146,30 @@ const Settings = {
     closeModal('modal-pin-change');
     showToast(`${this._pinChangeTarget === 'owner' ? 'Owner' : 'Staff'} PIN updated`, 'success');
     this._renderSecurity();
+  },
+
+  renderQRCode() {
+    const base   = location.href.replace(/[^/]*$/, '');
+    const branch = App.currentBranch || 1;
+    const url    = `${base}queue.php?branch=${branch}`;
+    const qrSrc  = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=000000&margin=8`;
+
+    const wrap = document.getElementById('qr-code-wrap');
+    if (wrap) wrap.innerHTML = `<img src="${qrSrc}" width="160" height="160" alt="Queue QR Code">`;
+
+    const inp = document.getElementById('queue-url-display');
+    if (inp) inp.value = url;
+
+    const dl = document.getElementById('qr-download-link');
+    if (dl) dl.href = qrSrc;
+  },
+
+  copyQueueUrl() {
+    const url = document.getElementById('queue-url-display')?.value;
+    if (!url) return;
+    navigator.clipboard.writeText(url)
+      .then(() => showToast('Queue URL copied!', 'success'))
+      .catch(() => showToast('Copy failed', 'error'));
   },
 };
 
