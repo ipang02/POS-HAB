@@ -260,5 +260,15 @@ const SessionManager = {
 
     document.getElementById('close-step-1')?.classList.add('hidden');
     document.getElementById('close-step-2')?.classList.remove('hidden');
+  },
+
+  _print() {
+    const content = document.getElementById('shift-report-print');
+    if (!content) { window.print(); return; }
+    const clone = content.cloneNode(true);
+    clone.id = 'shift-report-print-clone';
+    document.body.appendChild(clone);
+    window.print();
+    clone.remove();
   }
 };

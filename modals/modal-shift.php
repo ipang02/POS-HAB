@@ -71,7 +71,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button onclick="window.print()" class="btn-outline flex-1 flex items-center justify-center gap-2">
+        <button onclick="SessionManager._print()" class="btn-outline flex-1 flex items-center justify-center gap-2">
           <i class="fa-solid fa-print text-sm"></i> Print
         </button>
         <button id="btn-close-session" onclick="SessionManager.close()" class="btn-gold flex-1 flex items-center justify-center gap-2">
@@ -106,7 +106,7 @@
 <!-- Print-only: hide everything except shift report -->
 <style>
   @media print {
-    body > *:not(#print-receipt) { display: none !important; }
-    #shift-report-print { display: block !important; padding: 24px; color: #000; background: #fff; }
+    body > * { display: none !important; }
+    body > #shift-report-print-clone { display: block !important; padding: 24px; color: #000; background: #fff; }
   }
 </style>
