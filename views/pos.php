@@ -1,7 +1,14 @@
 <!-- ══ VIEW: POS CASHIER ════════════════════════════════════ -->
 <section id="view-pos" class="view">
 
-  <div class="flex gap-5 pos-layout" style="min-height:calc(100vh - 148px)">
+  <!-- ── Session Status Bar (visible when shift is open) ────── -->
+  <div id="pos-session-bar" class="hidden flex items-center justify-between glass rounded-xl px-4 py-2.5 mb-4"></div>
+
+  <!-- ── Locked Screen (visible when no shift is open) ─────── -->
+  <div id="pos-locked-screen" class="hidden flex flex-col items-center justify-center text-center"
+    style="min-height:calc(100vh - 220px)"></div>
+
+  <div id="pos-layout" class="flex gap-5 pos-layout" style="min-height:calc(100vh - 148px)">
 
     <!-- ── Left: Services & Products Panel ───────────────────── -->
     <div class="flex-1 flex flex-col min-w-0">
