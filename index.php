@@ -47,6 +47,7 @@ require 'config.php';
 <?php include 'modals/modal-shift.php'; ?>
 <?php include 'modals/modal-customer.php'; ?>
 <?php include 'modals/modal-confirm.php'; ?>
+<?php include 'modals/modal-queue.php'; ?>
 
 <!-- Toast Container -->
 <div id="toast-wrap" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 no-print pointer-events-none"></div>
@@ -61,6 +62,7 @@ require 'config.php';
 <script src="assets/js/customers.js?v=<?= filemtime('assets/js/customers.js') ?>"></script>
 <script src="assets/js/services-mgmt.js?v=<?= filemtime('assets/js/services-mgmt.js') ?>"></script>
 <script src="assets/js/dashboard.js?v=<?= filemtime('assets/js/dashboard.js') ?>"></script>
+<script src="assets/js/queue.js?v=<?= filemtime('assets/js/queue.js') ?>"></script>
 <script src="assets/js/session.js?v=<?= filemtime('assets/js/session.js') ?>"></script>
 <script src="assets/js/pos.js?v=<?= filemtime('assets/js/pos.js') ?>"></script>
 <script src="assets/js/appointments.js?v=<?= filemtime('assets/js/appointments.js') ?>"></script>
