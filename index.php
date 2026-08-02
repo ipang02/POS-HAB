@@ -61,6 +61,7 @@ require 'config.php';
 <script src="assets/js/customers.js?v=<?= filemtime('assets/js/customers.js') ?>"></script>
 <script src="assets/js/services-mgmt.js?v=<?= filemtime('assets/js/services-mgmt.js') ?>"></script>
 <script src="assets/js/dashboard.js?v=<?= filemtime('assets/js/dashboard.js') ?>"></script>
+<script src="assets/js/session.js?v=<?= filemtime('assets/js/session.js') ?>"></script>
 <script src="assets/js/pos.js?v=<?= filemtime('assets/js/pos.js') ?>"></script>
 <script src="assets/js/appointments.js?v=<?= filemtime('assets/js/appointments.js') ?>"></script>
 <script src="assets/js/barbers.js?v=<?= filemtime('assets/js/barbers.js') ?>"></script>
