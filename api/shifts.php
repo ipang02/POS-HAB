@@ -32,18 +32,20 @@ if ($method === 'GET') {
                 close_float, close_note, status
          FROM shifts WHERE branch_id = ? AND date = ?"
     );
+    if (!$stmt) { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'db_error']); exit; }
     $stmt->bind_param('is', $branchId, $date);
     $stmt->execute();
     $shift = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
     // Auto-close stale open shift from a past date
-    if ($shift && $shift['date'] < $date && $shift['status'] === 'open') {
+    if ($shift && $shift['date'] < date('Y-m-d') && $shift['status'] === 'open') {
         $staleId = (int)$shift['id'];
         $upd = $conn->prepare(
             "UPDATE shifts SET status='closed', close_time=NOW(), close_note='Auto-closed'
              WHERE id = ?"
         );
+        if (!$upd) { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'db_error']); exit; }
         $upd->bind_param('i', $staleId);
         $upd->execute();
         $upd->close();
@@ -65,6 +67,7 @@ if ($method === 'POST') {
         "INSERT INTO shifts (branch_id, date, open_time, open_by, open_float)
          VALUES (?, CURDATE(), NOW(), ?, ?)"
     );
+    if (!$stmt) { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'db_error']); exit; }
     $stmt->bind_param('isd', $branchId, $openBy, $openFloat);
     $ok = $stmt->execute();
     $stmt->close();
@@ -81,6 +84,7 @@ if ($method === 'POST') {
                         close_float, close_note, status
                  FROM shifts WHERE branch_id = ? AND date = CURDATE()"
             );
+            if (!$sel) { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'db_error']); exit; }
             $sel->bind_param('i', $branchId);
             $sel->execute();
             $existing = $sel->get_result()->fetch_assoc();
@@ -102,6 +106,7 @@ if ($method === 'POST') {
                 close_float, close_note, status
          FROM shifts WHERE id = ?"
     );
+    if (!$sel) { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'db_error']); exit; }
     $sel->bind_param('i', $newId);
     $sel->execute();
     $newShift = $sel->get_result()->fetch_assoc();
@@ -128,6 +133,7 @@ if ($method === 'PATCH') {
         "UPDATE shifts SET status='closed', close_time=NOW(),
          close_float=?, close_note=? WHERE id=?"
     );
+    if (!$stmt) { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'db_error']); exit; }
     $stmt->bind_param('dsi', $closeFloat, $closeNote, $id);
     $ok       = $stmt->execute();
     $affected = $stmt->affected_rows;
