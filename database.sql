@@ -260,3 +260,19 @@ ALTER TABLE `transactions`
 
 ALTER TABLE `transaction_items`
   ADD COLUMN IF NOT EXISTS `commission_rm` DECIMAL(8,2) UNSIGNED DEFAULT NULL;
+
+-- ── Table: shifts (POS session / shift management) ───────────
+CREATE TABLE IF NOT EXISTS `shifts` (
+  `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `branch_id`   TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  `date`        DATE NOT NULL,
+  `open_time`   TIME NOT NULL,
+  `open_by`     VARCHAR(20) NOT NULL DEFAULT 'staff',
+  `open_float`  DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `close_time`  TIME DEFAULT NULL,
+  `close_float` DECIMAL(10,2) DEFAULT NULL,
+  `close_note`  VARCHAR(255) DEFAULT NULL,
+  `status`      ENUM('open','closed') NOT NULL DEFAULT 'open',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_branch_date` (`branch_id`,`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
