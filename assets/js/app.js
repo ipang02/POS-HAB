@@ -111,6 +111,38 @@ const API = {
 
   clearTransactions() {
     fetch('api/transactions.php', { method: 'DELETE', headers: this._h() }).catch(() => {});
+  },
+
+  async fetchShift(branchId, date) {
+    try {
+      const res = await fetch(`api/shifts.php?branch_id=${branchId}&date=${date}`, { headers: this._h() });
+      if (!res.ok) return null;
+      return res.json();
+    } catch { return null; }
+  },
+
+  async openShift(payload) {
+    try {
+      const res = await fetch('api/shifts.php', {
+        method: 'POST',
+        headers: this._h(),
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) return { ok: false };
+      return res.json();
+    } catch { return { ok: false }; }
+  },
+
+  async closeShift(payload) {
+    try {
+      const res = await fetch('api/shifts.php', {
+        method: 'PATCH',
+        headers: this._h(),
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) return { ok: false };
+      return res.json();
+    } catch { return { ok: false }; }
   }
 };
 
@@ -427,6 +459,14 @@ document.addEventListener('keydown', e => {
 const App = {
   currentBranch: 1,
   lastSyncAt: null,
+  session: {
+    isOpen:    false,
+    id:        null,
+    date:      null,
+    openTime:  null,
+    openBy:    null,
+    openFloat: 0
+  },
 
   setBranch(id) {
     this.currentBranch = id;
@@ -467,6 +507,10 @@ const App = {
     Dashboard.init();
     Inventory.checkLowStock();
     document.getElementById('page-sub').textContent = Router.pages.dashboard.sub();
+    try {
+      const shiftData = await API.fetchShift(this.currentBranch || 1, today());
+      if (typeof SessionManager !== 'undefined') SessionManager.load(shiftData?.shift ?? null);
+    } catch {}
     this._startPolling();
   },
 
@@ -533,6 +577,13 @@ const App = {
           AppData.transactions = [...todayFromAPI, ...historical];
           StorageManager.save('transactions', AppData.transactions);
           changed = true;
+        }
+
+        // Refresh shift state every poll cycle
+        const shiftData = await API.fetchShift(App.currentBranch || 1, today());
+        const newIsOpen = !!(shiftData?.shift?.status === 'open');
+        if (newIsOpen !== App.session.isOpen) {
+          if (typeof SessionManager !== 'undefined') SessionManager.load(shiftData?.shift ?? null);
         }
 
         this.lastSyncAt = new Date().toISOString();
