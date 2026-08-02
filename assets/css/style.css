@@ -443,8 +443,11 @@ body {
   #sidebar.mob-open { transform: translateX(0); }
   #mob-overlay.show { display: block; }
   #main-wrap { margin-left: 0 !important; }
+  main { padding: 1rem; }
   .pos-layout { flex-direction: column; }
   .pos-cart-panel { width: 100% !important; max-height: unset !important; }
+  #pos-session-bar { flex-wrap: wrap; gap: .5rem; font-size: .75rem; }
+  #pos-layout { min-height: unset !important; }
 }
 
 /* ── Card Sections ─────────────────────────────────────────── */

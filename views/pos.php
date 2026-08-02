@@ -14,28 +14,28 @@
     <div class="flex-1 flex flex-col min-w-0">
 
       <!-- Top controls row -->
-      <div class="flex gap-3 mb-4">
+      <div class="flex flex-wrap gap-2 mb-4">
         <!-- Services / Products tab switcher -->
         <div class="flex gap-1 glass rounded-xl p-1 flex-shrink-0">
-          <button id="pos-tab-services" class="tab-btn active flex items-center gap-1.5 px-4 py-2"
+          <button id="pos-tab-services" class="tab-btn active flex items-center gap-1.5 px-3 py-2"
             onclick="POS.switchPanel('services', this)">
             <i class="fa-solid fa-scissors text-[11px]"></i>
             <span class="text-sm">Services</span>
           </button>
-          <button id="pos-tab-products" class="tab-btn flex items-center gap-1.5 px-4 py-2"
+          <button id="pos-tab-products" class="tab-btn flex items-center gap-1.5 px-3 py-2"
             onclick="POS.switchPanel('products', this)">
             <i class="fa-solid fa-box text-[11px]"></i>
             <span class="text-sm">Products</span>
           </button>
         </div>
         <!-- Search (shared) -->
-        <div class="relative flex-1">
+        <div class="relative flex-1 min-w-[120px]">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white/22 text-xs"></i>
-          <input type="text" id="svc-search" placeholder="Search… (press /)"
+          <input type="text" id="svc-search" placeholder="Search…"
             oninput="POS.handleSearch()" class="inp pl-9 py-2.5 text-sm">
         </div>
         <!-- Barber selector -->
-        <select id="pos-barber" class="sel py-2.5 text-sm" style="width:180px">
+        <select id="pos-barber" class="sel py-2.5 text-sm w-full sm:w-[180px] sm:flex-none">
           <option value="">Select Barber</option>
         </select>
       </div>
