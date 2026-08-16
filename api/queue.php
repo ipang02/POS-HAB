@@ -2,7 +2,7 @@
 require '../config.php';
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PATCH, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-API-Token');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
@@ -101,6 +101,31 @@ if ($method === 'PATCH') {
     $stmt = $conn->prepare("UPDATE `queue` SET status = ?, `{$tsField}` = NOW() WHERE id = ?");
     if (!$stmt) { http_response_code(500); echo json_encode(['ok' => false, 'error' => 'db_error']); exit; }
     $stmt->bind_param('si', $status, $id);
+    $stmt->execute();
+
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// ── DELETE: authenticated remove entry ──────────────────────
+if ($method === 'DELETE') {
+    $token = $_SERVER['HTTP_X_API_TOKEN'] ?? '';
+    if ($token !== API_TOKEN) {
+        http_response_code(401);
+        echo json_encode(['ok' => false, 'error' => 'unauthorized']);
+        exit;
+    }
+
+    $id = intval($_GET['id'] ?? 0);
+    if (!$id) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'invalid']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("DELETE FROM `queue` WHERE id = ?");
+    if (!$stmt) { http_response_code(500); echo json_encode(['ok' => false, 'error' => 'db_error']); exit; }
+    $stmt->bind_param('i', $id);
     $stmt->execute();
 
     echo json_encode(['ok' => true]);

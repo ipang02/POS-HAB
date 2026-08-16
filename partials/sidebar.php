@@ -25,6 +25,12 @@
       <span class="lbl">POS Cashier</span>
     </a>
 
+    <a class="nav-item" data-view="queue" data-tip="Walk-in Queue" onclick="navigate('queue')">
+      <i class="fa-solid fa-list-ol nav-icon"></i>
+      <span class="lbl">Walk-in Queue</span>
+      <span class="badge-lbl lbl ml-auto bg-amber-400/15 text-amber-400 text-[10px] px-2 py-0.5 rounded-full font-semibold hidden" id="nav-queue-badge"></span>
+    </a>
+
     <a class="nav-item" data-view="services" data-tip="Services" onclick="navigate('services')">
       <i class="fa-solid fa-list-check nav-icon"></i>
       <span class="lbl">Services</span>

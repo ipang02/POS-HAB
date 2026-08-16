@@ -39,6 +39,7 @@ const QueueManager = {
     const waiting = entries.filter(e => e.status === 'waiting').length;
     if (lbl)   lbl.textContent = `${waiting} waiting`;
     if (empty) empty.classList.toggle('hidden', entries.length > 0);
+    _updateQueueNavBadge(waiting);
     list.classList.toggle('hidden', entries.length === 0);
 
     // Remove gone entries
@@ -83,7 +84,7 @@ const QueueManager = {
         <div class="flex items-center gap-1">
           <p class="text-sm font-medium text-white truncate">${this._esc(entry.name)}</p>${partyBadge}
         </div>
-        <p class="text-xs text-white/35">${this._esc(phone)}</p>
+        <p class="text-xs text-white/60">${this._esc(phone)}</p>
       </div>
       <div class="q-status flex items-center gap-1.5 flex-shrink-0">
         ${isServing ? this._servingBadge() : ''}
@@ -175,5 +176,192 @@ const QueueManager = {
     return String(s)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;')
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+};
+
+// ── Shared nav badge helper ───────────────────────────────────
+function _updateQueueNavBadge(waiting) {
+  const badge = document.getElementById('nav-queue-badge');
+  if (!badge) return;
+  if (waiting > 0) {
+    badge.textContent = waiting;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+// ── QueuePage: full-page walk-in queue management ─────────────
+const QueuePage = {
+  _pollTimer: null,
+
+  init() {
+    clearTimeout(this._pollTimer);
+    this._fetch();
+  },
+
+  stop() { clearTimeout(this._pollTimer); },
+
+  async _fetch() {
+    try {
+      const res  = await fetch(`api/queue.php?branch_id=${App.currentBranch || 1}&date=${today()}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.ok) this._render(data.entries);
+    } catch {}
+    this._pollTimer = setTimeout(() => this._fetch(), 5000);
+  },
+
+  _render(entries) {
+    const waiting = entries.filter(e => e.status === 'waiting');
+    const serving = entries.filter(e => e.status === 'serving');
+
+    document.getElementById('qp-waiting-lbl').textContent = `${waiting.length} waiting`;
+    document.getElementById('qp-serving-lbl').textContent = `${serving.length} serving`;
+    _updateQueueNavBadge(waiting.length);
+
+    const empty = document.getElementById('qp-empty');
+    if (empty) empty.classList.toggle('hidden', entries.length > 0);
+
+    const servingSection = document.getElementById('qp-serving-section');
+    const servingList    = document.getElementById('qp-serving-list');
+    if (servingSection) servingSection.classList.toggle('hidden', serving.length === 0);
+    if (servingList)    servingList.innerHTML = serving.map(e => this._buildCard(e, null, true)).join('');
+
+    const waitingList = document.getElementById('qp-waiting-list');
+    if (waitingList) waitingList.innerHTML = waiting.map((e, i) => this._buildCard(e, i + 1, false)).join('');
+  },
+
+  _buildCard(entry, pos, isServing) {
+    const phone    = '****' + String(entry.phone).slice(-4);
+    const joinTime = entry.joined_at ? String(entry.joined_at).split(' ')[1]?.slice(0, 5) : '';
+    const party    = entry.party_size > 1
+      ? `<span class="text-xs font-semibold" style="color:rgba(201,168,76,.8)">+${entry.party_size - 1} pax</span>` : '';
+
+    const posBadge = pos != null
+      ? `<div class="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0" style="background:rgba(201,168,76,.15);color:rgba(255,255,255,.75)">#${pos}</div>`
+      : `<div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(201,168,76,.2)"><i class="fa-solid fa-scissors text-gold"></i></div>`;
+
+    const serveBtn = !isServing
+      ? `<button onclick="QueuePage.serve(${entry.id})" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold" style="background:rgba(201,168,76,.18);color:#C9A84C">
+           <i class="fa-solid fa-scissors"></i> Serve
+         </button>` : '';
+
+    const doneBtn = isServing
+      ? `<button onclick="QueuePage.done(${entry.id})" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold" style="background:rgba(74,222,128,.14);color:#4ade80">
+           <i class="fa-solid fa-circle-check"></i> Done
+         </button>` : '';
+
+    const removeBtn = `<button onclick="QueuePage.remove(${entry.id}, '${this._esc(entry.name)}')" class="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0" style="background:rgba(248,113,113,.1);color:#f87171" title="Remove from queue">
+         <i class="fa-solid fa-xmark"></i>
+       </button>`;
+
+    const borderStyle = isServing
+      ? 'border:1px solid rgba(201,168,76,.4);background:rgba(201,168,76,.05)'
+      : 'border:1px solid rgba(255,255,255,.06)';
+
+    return `
+      <div class="glass rounded-2xl px-5 py-4 flex items-center gap-4" style="${borderStyle}">
+        ${posBadge}
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-0.5">
+            <span class="text-base font-bold text-white">${this._esc(entry.name)}</span>
+            ${party}
+            ${isServing ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(201,168,76,.2);color:#C9A84C">Serving</span>' : ''}
+          </div>
+          <div class="flex items-center gap-3 text-xs" style="color:rgba(255,255,255,.5)">
+            <span><i class="fa-solid fa-phone mr-1" style="font-size:.6rem"></i>${this._esc(phone)}</span>
+            ${joinTime ? `<span><i class="fa-regular fa-clock mr-1" style="font-size:.6rem"></i>Joined ${joinTime}</span>` : ''}
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          ${serveBtn}${doneBtn}${removeBtn}
+        </div>
+      </div>`;
+  },
+
+  async serve(id) {
+    try {
+      await fetch('api/queue.php', {
+        method: 'PATCH',
+        headers: API._h(),
+        body: JSON.stringify({ id, status: 'serving' })
+      });
+      clearTimeout(this._pollTimer);
+      this._fetch();
+    } catch { showToast('Network error', 'error'); }
+  },
+
+  async done(id) {
+    try {
+      await fetch('api/queue.php', {
+        method: 'PATCH',
+        headers: API._h(),
+        body: JSON.stringify({ id, status: 'done' })
+      });
+      clearTimeout(this._pollTimer);
+      this._fetch();
+    } catch { showToast('Network error', 'error'); }
+  },
+
+  remove(id, name) {
+    showConfirm(
+      'Remove from Queue',
+      `Remove ${name} from the queue?`,
+      () => this._doRemove(id),
+      'Remove'
+    );
+  },
+
+  async _doRemove(id) {
+    try {
+      const res  = await fetch(`api/queue.php?id=${id}`, {
+        method: 'DELETE',
+        headers: API._h()
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showToast('Entry removed from queue', 'info');
+        clearTimeout(this._pollTimer);
+        this._fetch();
+      } else {
+        showToast('Failed to remove entry', 'error');
+      }
+    } catch { showToast('Network error', 'error'); }
+  },
+
+  openAddModal() {
+    document.getElementById('qadd-name').value  = '';
+    document.getElementById('qadd-phone').value = '';
+    document.getElementById('qadd-party').value = '1';
+    openModal('modal-queue-add');
+  },
+
+  async add() {
+    const name      = document.getElementById('qadd-name').value.trim();
+    const phone     = document.getElementById('qadd-phone').value.trim();
+    const partySize = Math.max(1, parseInt(document.getElementById('qadd-party').value, 10) || 1);
+    if (!name || !phone) { showToast('Name and phone required', 'error'); return; }
+
+    try {
+      const res  = await fetch('api/queue.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ branch_id: App.currentBranch || 1, name, phone, party_size: partySize })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        closeModal('modal-queue-add');
+        showToast(`${name} added to queue`, 'success');
+        clearTimeout(this._pollTimer);
+        this._fetch();
+      } else {
+        showToast('Failed to add', 'error');
+      }
+    } catch { showToast('Network error', 'error'); }
+  },
+
+  _esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 };

@@ -25,6 +25,7 @@ require 'config.php';
 
   <main class="flex-1 p-6">
     <?php include 'views/dashboard.php'; ?>
+    <?php include 'views/queue-manage.php'; ?>
     <?php include 'views/pos.php'; ?>
     <?php include 'views/services.php'; ?>
     <?php include 'views/appointments.php'; ?>

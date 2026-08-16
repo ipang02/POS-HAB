@@ -319,6 +319,7 @@ const Router = {
     inventory:    { title:'Inventory',          sub: () => `${currentBranchName()} — stock management` },
     settings:     { title:'Settings',           sub: () => `${currentBranchName()} — system configuration` },
     customers:    { title:'Customers',          sub: () => 'Global customer profiles — all branches' },
+    queue:        { title:'Walk-in Queue',      sub: () => `${currentBranchName()} — manage today's walk-ins` },
   },
 
   go(view) {
@@ -341,7 +342,7 @@ const Router = {
     document.getElementById('page-sub').textContent   = p.sub();
     this.current = view;
     // call module init
-    const inits = { dashboard: () => Dashboard.init(), pos: () => POS.init(), services: () => ServicesMgmt.init(), appointments: () => Appointments.init(), barbers: () => Barbers.init(), analytics: () => Analytics.init(), inventory: () => Inventory.init(), settings: () => Settings.load(), customers: () => Customers.init() };
+    const inits = { dashboard: () => Dashboard.init(), pos: () => POS.init(), services: () => ServicesMgmt.init(), appointments: () => Appointments.init(), barbers: () => Barbers.init(), analytics: () => Analytics.init(), inventory: () => Inventory.init(), settings: () => Settings.load(), customers: () => Customers.init(), queue: () => QueuePage.init() };
     if (inits[view]) inits[view]();
     // scroll to top
     document.querySelector('main').scrollTop = 0;
