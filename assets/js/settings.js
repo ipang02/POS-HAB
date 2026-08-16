@@ -26,6 +26,7 @@ const Settings = {
     BranchConfig.renderCards();
     this._renderSecurity();
     this.renderQRCode();
+    this.renderTvUrl();
   },
 
   _set(id, val)      { const el = document.getElementById(id); if (el) el.value = val ?? ''; },
@@ -169,6 +170,26 @@ const Settings = {
     if (!url) return;
     navigator.clipboard.writeText(url)
       .then(() => showToast('Queue URL copied!', 'success'))
+      .catch(() => showToast('Copy failed', 'error'));
+  },
+
+  renderTvUrl() {
+    const base   = location.href.replace(/[^/]*$/, '');
+    const branch = App.currentBranch || 1;
+    const url    = `${base}queue-tv.php?branch=${branch}`;
+
+    const inp = document.getElementById('tv-url-display');
+    if (inp) inp.value = url;
+
+    const link = document.getElementById('tv-open-link');
+    if (link) link.href = url;
+  },
+
+  copyTvUrl() {
+    const url = document.getElementById('tv-url-display')?.value;
+    if (!url) return;
+    navigator.clipboard.writeText(url)
+      .then(() => showToast('TV Display URL copied!', 'success'))
       .catch(() => showToast('Copy failed', 'error'));
   },
 };
