@@ -43,6 +43,52 @@ if (!$conn->connect_error) {
       -webkit-font-smoothing: antialiased;
     }
 
+    /* ── Sound prompt overlay ────────────────────────────────── */
+    .sound-prompt {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,.92);
+      z-index: 9999;
+    }
+    .sound-prompt-card {
+      text-align: center;
+      padding: 3.5rem 4rem;
+      border-radius: 2rem;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+    }
+    .sound-prompt-icon {
+      font-size: 3.5rem;
+      color: var(--gold);
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+    .sound-prompt-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: .6rem;
+    }
+    .sound-prompt-sub {
+      font-size: .95rem;
+      color: var(--text-dim);
+      margin-bottom: 2.25rem;
+    }
+    .sound-prompt-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      background: var(--gold);
+      color: #000;
+      border: none;
+      padding: 1rem 2.75rem;
+      border-radius: 1rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .sound-prompt-btn:hover { opacity: .85; }
+
     /* ── Root layout ─────────────────────────────────────────── */
     .tv-wrap {
       display: flex;
@@ -158,8 +204,6 @@ if (!$conn->connect_error) {
       color: var(--text-dim);
       margin-top: .6rem;
     }
-
-    /* Empty state */
     .tv-serving-empty {
       width: 100%;
       max-width: 360px;
@@ -201,21 +245,14 @@ if (!$conn->connect_error) {
       color: var(--text-dim);
       font-weight: 500;
     }
-
-    /* Scroll container */
     .tv-scroll-wrap {
       flex: 1;
       overflow: hidden;
       position: relative;
     }
-    .tv-queue-list {
-      padding: .85rem 1.75rem;
-    }
-    .tv-queue-list.scrolling {
-      animation: tvScroll linear infinite;
-    }
+    .tv-queue-list { padding: .85rem 1.75rem; }
+    .tv-queue-list.scrolling { animation: tvScroll linear infinite; }
 
-    /* Queue row */
     .tv-row {
       display: flex;
       align-items: center;
@@ -244,11 +281,7 @@ if (!$conn->connect_error) {
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .tv-row-sub {
-      font-size: .8rem;
-      color: var(--text-dim);
-      margin-top: .1rem;
-    }
+    .tv-row-sub { font-size: .8rem; color: var(--text-dim); margin-top: .1rem; }
     .tv-row-badge {
       font-size: .72rem;
       font-weight: 700;
@@ -260,7 +293,6 @@ if (!$conn->connect_error) {
       color: rgba(255,255,255,.3);
     }
 
-    /* Empty queue */
     .tv-queue-empty {
       flex: 1;
       display: flex;
@@ -292,6 +324,19 @@ if (!$conn->connect_error) {
   </style>
 </head>
 <body>
+
+  <!-- ── Sound unlock prompt (shown on load) ──────────────────── -->
+  <div class="sound-prompt" id="sound-prompt">
+    <div class="sound-prompt-card">
+      <i class="fa-solid fa-volume-high sound-prompt-icon"></i>
+      <p class="sound-prompt-title">Queue Display</p>
+      <p class="sound-prompt-sub">Click to start — sound alerts will play when customers are called</p>
+      <button class="sound-prompt-btn" onclick="startDisplay()">
+        <i class="fa-solid fa-play"></i> Start Display
+      </button>
+    </div>
+  </div>
+
 <div class="tv-wrap">
 
   <!-- ── Header ───────────────────────────────────────────────── -->
@@ -346,6 +391,76 @@ if (!$conn->connect_error) {
   const SCROLL_AT    = 7;
   const SECS_PER_ROW = 3;
 
+  // ── Audio ────────────────────────────────────────────────────
+  let audioCtx     = null;
+  let prevIds      = null; // Set<id> — all entry ids seen last poll
+  let prevServing  = null; // Set<id> — serving ids seen last poll
+
+  function startDisplay() {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    document.getElementById('sound-prompt').style.display = 'none';
+    poll();
+  }
+
+  // Bold 4-note ascending fanfare — plays when a customer is called
+  function playCalled() {
+    if (!audioCtx) return;
+    // G4 → C5 → E5 → G5 arpeggio
+    [[392, 0], [523, 0.13], [659, 0.26], [784, 0.39]].forEach(([freq, t]) => {
+      const now = audioCtx.currentTime + t;
+      // Fundamental
+      _tone(freq,       now, 0.48, 0.04);
+      // 2nd harmonic — adds brightness
+      _tone(freq * 2,   now, 0.14, 0.30);
+    });
+  }
+
+  // Light 2-note chime — plays when a new customer joins
+  function playJoined() {
+    if (!audioCtx) return;
+    // E5 → G5
+    [[659, 0], [784, 0.2]].forEach(([freq, t]) => {
+      _tone(freq, audioCtx.currentTime + t, 0.28, 0.42);
+    });
+  }
+
+  function _tone(freq, startTime, volume, decay) {
+    const osc  = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(volume, startTime + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + decay);
+    osc.start(startTime);
+    osc.stop(startTime + decay + 0.05);
+  }
+
+  // ── State change detection ───────────────────────────────────
+  function detectSound(entries) {
+    const ids     = new Set(entries.map(e => e.id));
+    const serving = new Set(entries.filter(e => e.status === 'serving').map(e => e.id));
+
+    if (prevIds === null) {
+      prevIds = ids; prevServing = serving; return;
+    }
+
+    // Newly serving (customer called) — takes priority
+    let calledNew = false;
+    serving.forEach(id => { if (!prevServing.has(id)) calledNew = true; });
+
+    // Newly joined
+    let joinedNew = false;
+    ids.forEach(id => { if (!prevIds.has(id)) joinedNew = true; });
+
+    if (calledNew)       playCalled();
+    else if (joinedNew)  playJoined();
+
+    prevIds = ids; prevServing = serving;
+  }
+
   // ── Clock ────────────────────────────────────────────────────
   (function clock() {
     document.getElementById('tv-clock').textContent =
@@ -363,13 +478,13 @@ if (!$conn->connect_error) {
 
   // ── Render ───────────────────────────────────────────────────
   function render(entries) {
+    detectSound(entries);
+
     const waiting = entries.filter(e => e.status === 'waiting');
     const serving = entries.filter(e => e.status === 'serving');
 
-    // Count
     document.getElementById('tv-count').textContent = waiting.length;
 
-    // Now Serving
     const slot = document.getElementById('tv-serving-slot');
     if (serving.length) {
       const s = serving[0];
@@ -391,7 +506,6 @@ if (!$conn->connect_error) {
         </div>`;
     }
 
-    // Queue list
     const listEl  = document.getElementById('tv-queue-list');
     const emptyEl = document.getElementById('tv-queue-empty');
 
@@ -441,7 +555,7 @@ if (!$conn->connect_error) {
     setTimeout(poll, 5000);
   }
 
-  poll();
+  // Note: poll() is started by startDisplay() after audio is unlocked
 </script>
 </body>
 </html>
