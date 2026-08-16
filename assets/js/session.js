@@ -38,7 +38,7 @@ const SessionManager = {
       open_float: openFloat
     });
 
-    if (btn) { btn.disabled = false; btn.textContent = 'Open Session'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-lock-open text-sm"></i> Open Session'; }
 
     if (res.ok || res.error === 'shift_exists') {
       this.load(res.shift);
@@ -63,7 +63,7 @@ const SessionManager = {
       close_note:  closeNote
     });
 
-    if (btn) { btn.disabled = false; btn.textContent = 'Close Session'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-door-closed text-sm"></i> Close Session'; }
 
     if (res.ok) {
       App.session = { isOpen:false, id:null, date:null, openTime:null, openBy:null, openFloat:0 };
@@ -164,7 +164,13 @@ const SessionManager = {
 
   // ── Build and show shift report (Step 2) ────────────────────
   generateReport() {
-    const closeFloat = parseFloat(document.getElementById('close-actual-cash')?.value || 0) || 0;
+    const actualCashEl = document.getElementById('close-actual-cash');
+    if (!actualCashEl?.value.trim()) {
+      showToast('Please enter the actual cash count in the drawer', 'error');
+      actualCashEl?.focus();
+      return;
+    }
+    const closeFloat = parseFloat(actualCashEl.value) || 0;
     const shiftDate  = App.session.date || today();
     const branchId   = App.currentBranch || 1;
 
