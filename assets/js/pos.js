@@ -322,8 +322,7 @@ const POS = {
 
   recalc() {
     const subtotal   = this.cart.reduce((s, c) => s + c.price * c.qty, 0);
-    const discPct    = parseFloat(document.getElementById('pos-discount')?.value || 0);
-    const discAmt    = Math.round(subtotal * discPct / 100);
+    const discAmt    = Math.min(parseFloat(document.getElementById('pos-discount')?.value || 0), subtotal);
     const afterDisc  = subtotal - discAmt;
     const taxRate    = AppData.settings.taxRate != null ? AppData.settings.taxRate : 6;
     const taxAmt     = Math.round(afterDisc * taxRate / 100);
@@ -357,8 +356,7 @@ const POS = {
     if (!this._requireBarber()) return;
     if (!this.cart.length && !this.bookingFeeAdded) return;
     const subtotal  = this.cart.reduce((s, c) => s + c.price * c.qty, 0);
-    const discPct   = parseFloat(document.getElementById('pos-discount')?.value || 0);
-    const discAmt   = Math.round(subtotal * discPct / 100);
+    const discAmt   = Math.min(parseFloat(document.getElementById('pos-discount')?.value || 0), subtotal);
     const afterDisc = subtotal - discAmt;
     const taxAmt    = Math.round(afterDisc * (AppData.settings.taxRate != null ? AppData.settings.taxRate : 6) / 100);
     const total     = afterDisc + taxAmt;
@@ -425,9 +423,8 @@ const POS = {
     const customer = (document.getElementById('pay-customer-name')?.value || '').trim() || 'Walk-in';
     const barberId = parseInt(document.getElementById('pos-barber')?.value) || 0;
     const barber   = getBarberById(barberId);
-    const discPct  = parseFloat(document.getElementById('pos-discount')?.value || 0);
-    const subtotal = this.cart.reduce((s, c) => s + c.price * c.qty, 0);
-    const discAmt  = Math.round(subtotal * discPct / 100);
+    const subtotal  = this.cart.reduce((s, c) => s + c.price * c.qty, 0);
+    const discAmt   = Math.min(parseFloat(document.getElementById('pos-discount')?.value || 0), subtotal);
     const afterDisc = subtotal - discAmt;
     const taxAmt   = Math.round(afterDisc * (AppData.settings.taxRate != null ? AppData.settings.taxRate : 6) / 100);
     const tendered = this.payMethod === 'cash' ? parseFloat(document.getElementById('cash-tendered')?.value || 0) : 0;
@@ -446,7 +443,7 @@ const POS = {
       barberId,
       branchId: App.currentBranch || 1,
       services: cartServices,
-      discount: discPct,
+      discount: discAmt,
       tax:      AppData.settings.taxRate != null ? AppData.settings.taxRate : 6,
       total,
       method:   this.payMethod,

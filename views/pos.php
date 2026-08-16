@@ -126,10 +126,10 @@
 
         <!-- Discount -->
         <div class="flex items-center gap-2">
-          <label class="text-xs text-white/40 w-20 flex-shrink-0">Discount %</label>
-          <input type="number" id="pos-discount" min="0" max="100" value="0"
+          <label class="text-xs text-white/40 w-20 flex-shrink-0">Discount (RM)</label>
+          <input type="number" id="pos-discount" min="0" step="0.50" value="0"
             oninput="POS.recalc()" class="inp text-center text-sm py-1.5"
-            style="width:58px; padding-left:6px; padding-right:6px;">
+            style="width:68px; padding-left:6px; padding-right:6px;">
           <div class="flex-1 text-right">
             <span class="text-xs text-white/30">Saved: </span>
             <span class="text-xs text-red-400 font-semibold" id="pos-disc-amt">RM 0</span>
