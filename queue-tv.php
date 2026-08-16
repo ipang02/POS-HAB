@@ -20,6 +20,7 @@ if (!$conn->connect_error) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1920, initial-scale=1.0">
   <title><?= htmlspecialchars($branchName) ?> — Queue Display</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -42,7 +43,7 @@ if (!$conn->connect_error) {
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Root layout ────────────────────────────────────────────── */
+    /* ── Root layout ─────────────────────────────────────────── */
     .tv-wrap {
       display: flex;
       flex-direction: column;
@@ -50,34 +51,21 @@ if (!$conn->connect_error) {
       height: 100vh;
     }
 
-    /* ── Header ─────────────────────────────────────────────────── */
+    /* ── Header ──────────────────────────────────────────────── */
     .tv-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1.1rem 2.5rem;
+      padding: 0 2.5rem;
+      height: 88px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
-      background: rgba(0,0,0,.35);
-      backdrop-filter: blur(8px);
+      background: rgba(0,0,0,.4);
     }
-    .tv-brand {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .tv-brand-icon {
-      width: 3rem; height: 3rem;
-      border-radius: .85rem;
-      background: var(--gold-dim);
-      border: 1px solid var(--gold-ring);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.45rem;
-    }
-    .tv-brand-name {
-      font-size: 1.55rem;
-      font-weight: 700;
-      letter-spacing: -.025em;
+    .tv-logo {
+      height: 64px;
+      width: auto;
+      object-fit: contain;
     }
     .tv-header-right {
       display: flex;
@@ -108,14 +96,14 @@ if (!$conn->connect_error) {
       letter-spacing: .02em;
     }
 
-    /* ── Body ───────────────────────────────────────────────────── */
+    /* ── Body ────────────────────────────────────────────────── */
     .tv-body {
       display: flex;
       flex: 1;
       min-height: 0;
     }
 
-    /* ── Left: Now Serving ──────────────────────────────────────── */
+    /* ── Left: Now Serving ───────────────────────────────────── */
     .tv-left {
       width: 36%;
       flex-shrink: 0;
@@ -148,7 +136,7 @@ if (!$conn->connect_error) {
     .tv-serving-tag {
       display: inline-flex;
       align-items: center;
-      gap: .45rem;
+      gap: .5rem;
       font-size: .75rem;
       font-weight: 700;
       letter-spacing: .14em;
@@ -180,10 +168,15 @@ if (!$conn->connect_error) {
       padding: 3.5rem 2rem;
       text-align: center;
     }
-    .tv-serving-empty .empty-icon { font-size: 2.75rem; margin-bottom: .75rem; }
+    .tv-serving-empty .empty-icon {
+      font-size: 2.75rem;
+      color: rgba(255,255,255,.15);
+      margin-bottom: .85rem;
+      display: block;
+    }
     .tv-serving-empty p { font-size: 1rem; color: rgba(255,255,255,.2); }
 
-    /* ── Right: Queue list ──────────────────────────────────────── */
+    /* ── Right: Queue list ───────────────────────────────────── */
     .tv-right {
       flex: 1;
       display: flex;
@@ -276,10 +269,14 @@ if (!$conn->connect_error) {
       justify-content: center;
       gap: .85rem;
     }
-    .tv-queue-empty .empty-icon { font-size: 3.5rem; }
+    .tv-queue-empty .empty-icon {
+      font-size: 3.5rem;
+      color: rgba(255,255,255,.15);
+      display: block;
+    }
     .tv-queue-empty p { font-size: 1.05rem; color: rgba(255,255,255,.2); }
 
-    /* ── Animations ─────────────────────────────────────────────── */
+    /* ── Animations ──────────────────────────────────────────── */
     @keyframes livePulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50%       { opacity: .35; transform: scale(.85); }
@@ -297,12 +294,9 @@ if (!$conn->connect_error) {
 <body>
 <div class="tv-wrap">
 
-  <!-- ── Header ──────────────────────────────────────────────── -->
+  <!-- ── Header ───────────────────────────────────────────────── -->
   <header class="tv-header">
-    <div class="tv-brand">
-      <div class="tv-brand-icon">💈</div>
-      <span class="tv-brand-name"><?= htmlspecialchars($branchName) ?></span>
-    </div>
+    <img src="logo-hab.png" alt="<?= htmlspecialchars($branchName) ?>" class="tv-logo">
     <div class="tv-header-right">
       <div class="tv-live">
         <span class="live-dot"></span>
@@ -312,7 +306,7 @@ if (!$conn->connect_error) {
     </div>
   </header>
 
-  <!-- ── Body ────────────────────────────────────────────────── -->
+  <!-- ── Body ─────────────────────────────────────────────────── -->
   <div class="tv-body">
 
     <!-- Left: Now Serving -->
@@ -320,7 +314,7 @@ if (!$conn->connect_error) {
       <span class="tv-section-label">Now Serving</span>
       <div id="tv-serving-slot">
         <div class="tv-serving-empty">
-          <div class="empty-icon">🪑</div>
+          <i class="fa-solid fa-chair empty-icon"></i>
           <p>No one being served</p>
         </div>
       </div>
@@ -339,7 +333,7 @@ if (!$conn->connect_error) {
       </div>
 
       <div id="tv-queue-empty" class="tv-queue-empty hidden">
-        <div class="empty-icon">✅</div>
+        <i class="fa-solid fa-circle-check empty-icon"></i>
         <p>Queue is clear — walk right in!</p>
       </div>
     </div>
@@ -348,18 +342,18 @@ if (!$conn->connect_error) {
 </div>
 
 <script>
-  const BRANCH_ID = <?= intval($branchId) ?>;
-  const SCROLL_AT  = 7; // rows before auto-scroll kicks in
-  const SECS_PER_ROW = 3; // scroll speed: ~3 seconds per entry
+  const BRANCH_ID    = <?= intval($branchId) ?>;
+  const SCROLL_AT    = 7;
+  const SECS_PER_ROW = 3;
 
-  // ── Clock ──────────────────────────────────────────────────
+  // ── Clock ────────────────────────────────────────────────────
   (function clock() {
     document.getElementById('tv-clock').textContent =
       new Date().toLocaleTimeString('en-MY', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
     setTimeout(clock, 1000);
   })();
 
-  // ── Helpers ────────────────────────────────────────────────
+  // ── Helpers ──────────────────────────────────────────────────
   function today() { return new Date().toISOString().split('T')[0]; }
   function esc(s) {
     return String(s ?? '')
@@ -367,14 +361,13 @@ if (!$conn->connect_error) {
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // ── Render ─────────────────────────────────────────────────
+  // ── Render ───────────────────────────────────────────────────
   function render(entries) {
     const waiting = entries.filter(e => e.status === 'waiting');
     const serving = entries.filter(e => e.status === 'serving');
 
     // Count
     document.getElementById('tv-count').textContent = waiting.length;
-    document.getElementById('tv-count-lbl').textContent = waiting.length === 1 ? 'waiting' : 'waiting';
 
     // Now Serving
     const slot = document.getElementById('tv-serving-slot');
@@ -383,17 +376,17 @@ if (!$conn->connect_error) {
       slot.innerHTML = `
         <div class="tv-serving-card">
           <div class="tv-serving-tag">
-            <span>✂️</span> In Chair
+            <i class="fa-solid fa-scissors"></i> In Chair
           </div>
           <div class="tv-serving-name">${esc(s.name)}</div>
           ${s.party_size > 1
-            ? `<div class="tv-serving-party">Group of ${esc(s.party_size)}</div>`
+            ? `<div class="tv-serving-party"><i class="fa-solid fa-users" style="margin-right:.4rem;opacity:.5"></i>Group of ${esc(s.party_size)}</div>`
             : ''}
         </div>`;
     } else {
       slot.innerHTML = `
         <div class="tv-serving-empty">
-          <div class="empty-icon">🪑</div>
+          <i class="fa-solid fa-chair empty-icon"></i>
           <p>No one being served</p>
         </div>`;
     }
@@ -417,13 +410,16 @@ if (!$conn->connect_error) {
         <div class="tv-row-pos">#${i + 1}</div>
         <div class="tv-row-info">
           <div class="tv-row-name">${esc(e.name)}</div>
-          ${e.party_size > 1 ? `<div class="tv-row-sub">Group of ${esc(e.party_size)}</div>` : ''}
+          ${e.party_size > 1
+            ? `<div class="tv-row-sub"><i class="fa-solid fa-users" style="margin-right:.35rem;opacity:.45"></i>Group of ${esc(e.party_size)}</div>`
+            : ''}
         </div>
-        <span class="tv-row-badge">Waiting</span>
+        <span class="tv-row-badge">
+          <i class="fa-regular fa-clock" style="margin-right:.35rem"></i>Waiting
+        </span>
       </div>`).join('');
 
     if (waiting.length > SCROLL_AT) {
-      // Duplicate for seamless loop
       listEl.innerHTML = rowsHtml + rowsHtml;
       const dur = waiting.length * SECS_PER_ROW;
       listEl.className = 'tv-queue-list scrolling';
@@ -435,7 +431,7 @@ if (!$conn->connect_error) {
     }
   }
 
-  // ── Poll ───────────────────────────────────────────────────
+  // ── Poll ─────────────────────────────────────────────────────
   async function poll() {
     try {
       const res  = await fetch(`api/queue.php?branch_id=${BRANCH_ID}&date=${today()}`);
