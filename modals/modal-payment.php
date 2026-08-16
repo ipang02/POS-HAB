@@ -81,13 +81,29 @@
       <!-- QR Pay Panel -->
       <div id="pay-panel-qr" class="hidden space-y-4">
         <div class="glass rounded-xl p-5 flex flex-col items-center gap-3">
-          <div class="w-44 h-44 bg-white rounded-xl flex items-center justify-center" id="qr-pay-code"></div>
+          <div class="w-44 h-44 bg-white rounded-xl flex items-center justify-center cursor-pointer"
+            id="qr-pay-code" onclick="document.getElementById('qr-lightbox').classList.remove('hidden')"
+            title="Click to enlarge"></div>
           <p class="text-sm text-white font-semibold">Scan to Pay</p>
-          <p class="text-xs text-white/40">QRIS — All e-wallet supported</p>
+          <p class="text-[11px] text-white/30 flex items-center gap-1">
+            <i class="fa-solid fa-up-right-and-down-left-from-center text-[9px]"></i> Tap QR to enlarge
+          </p>
         </div>
         <div class="flex items-center gap-3 glass-gold rounded-xl px-4 py-3">
           <i class="fa-solid fa-circle-info text-gold"></i>
           <p class="text-xs text-white/60">Ask customer to confirm payment, then click confirm below.</p>
+        </div>
+      </div>
+
+      <!-- QR Lightbox -->
+      <div id="qr-lightbox" class="hidden fixed inset-0 flex items-center justify-center" style="z-index:9999;background:rgba(0,0,0,.85)">
+        <div class="relative bg-white rounded-2xl p-4" style="width:600px;max-width:90vw">
+          <button onclick="document.getElementById('qr-lightbox').classList.add('hidden')"
+            class="absolute -top-4 -right-4 w-9 h-9 rounded-full flex items-center justify-center text-white font-bold"
+            style="background:#C9A84C;font-size:1rem">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          <img src="qr-hab.jpeg" alt="Payment QR" style="width:100%;height:auto;display:block;border-radius:12px">
         </div>
       </div>
 
