@@ -153,10 +153,10 @@ const Settings = {
     const base   = location.href.replace(/[^/]*$/, '');
     const branch = App.currentBranch || 1;
     const url    = `${base}queue.php?branch=${branch}`;
-    const qrSrc  = 'qr-hab.jpeg';
+    const qrSrc  = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=000000&margin=8`;
 
     const wrap = document.getElementById('qr-code-wrap');
-    if (wrap) wrap.innerHTML = `<img src="${qrSrc}" width="160" height="160" alt="Queue QR Code" style="display:block">`;
+    if (wrap) wrap.innerHTML = `<img src="${qrSrc}" width="160" height="160" alt="Queue QR Code">`;
 
     const inp = document.getElementById('queue-url-display');
     if (inp) inp.value = url;

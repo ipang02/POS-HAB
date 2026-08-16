@@ -396,10 +396,7 @@ const POS = {
   _generatePayQR() {
     const qrEl = document.getElementById('qr-pay-code');
     if (!qrEl) return;
-    qrEl.innerHTML = '';
-    try {
-      new QRCode(qrEl, { text:'HAB-BARBERSHOP-QRIS-' + Date.now(), width:160, height:160, colorDark:'#000', colorLight:'#FFF', correctLevel: QRCode.CorrectLevel.M });
-    } catch(e) { qrEl.innerHTML = '<p class="text-xs text-gray-400 p-4">QR unavailable</p>'; }
+    qrEl.innerHTML = '<img src="qr-hab.jpeg" width="160" height="160" alt="Payment QR" style="display:block;border-radius:8px">';
   },
 
   calcChange() {
