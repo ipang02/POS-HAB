@@ -392,50 +392,29 @@ if (!$conn->connect_error) {
   const SECS_PER_ROW = 3;
 
   // ── Audio ────────────────────────────────────────────────────
-  let audioCtx     = null;
+  let soundReady   = false;
   let prevIds      = null; // Set<id> — all entry ids seen last poll
   let prevServing  = null; // Set<id> — serving ids seen last poll
 
+  const SND_CALLED = new Audio('serving.mp3');
+  const SND_JOINED = new Audio('new-queue.mp3');
+
   function startDisplay() {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    soundReady = true;
     document.getElementById('sound-prompt').style.display = 'none';
     poll();
   }
 
-  // Bold 4-note ascending fanfare — plays when a customer is called
   function playCalled() {
-    if (!audioCtx) return;
-    // G4 → C5 → E5 → G5 arpeggio
-    [[392, 0], [523, 0.13], [659, 0.26], [784, 0.39]].forEach(([freq, t]) => {
-      const now = audioCtx.currentTime + t;
-      // Fundamental
-      _tone(freq,       now, 0.48, 0.04);
-      // 2nd harmonic — adds brightness
-      _tone(freq * 2,   now, 0.14, 0.30);
-    });
+    if (!soundReady) return;
+    SND_CALLED.currentTime = 0;
+    SND_CALLED.play().catch(() => {});
   }
 
-  // Light 2-note chime — plays when a new customer joins
   function playJoined() {
-    if (!audioCtx) return;
-    // E5 → G5
-    [[659, 0], [784, 0.2]].forEach(([freq, t]) => {
-      _tone(freq, audioCtx.currentTime + t, 0.28, 0.42);
-    });
-  }
-
-  function _tone(freq, startTime, volume, decay) {
-    const osc  = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    gain.gain.setValueAtTime(0, startTime);
-    gain.gain.linearRampToValueAtTime(volume, startTime + 0.03);
-    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + decay);
-    osc.start(startTime);
-    osc.stop(startTime + decay + 0.05);
+    if (!soundReady) return;
+    SND_JOINED.currentTime = 0;
+    SND_JOINED.play().catch(() => {});
   }
 
   // ── State change detection ───────────────────────────────────
