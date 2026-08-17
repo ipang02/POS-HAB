@@ -3,7 +3,7 @@
 
   <!-- Logo -->
   <div class="flex items-center gap-3 px-4 py-[18px] border-b border-white/5 min-w-0 flex-shrink-0">
-    <div class="w-9 h-9 rounded-xl btn-gold flex items-center justify-center flex-shrink-0 font-bold text-xs tracking-tight select-none">HAB</div>
+    <img src="logo-hab.png" alt="HAB" class="h-9 w-auto flex-shrink-0 object-contain select-none">
     <div class="logo-txt lbl min-w-0">
       <div class="font-display font-bold text-white text-[15px] leading-tight tracking-wide">HAB</div>
       <div class="text-[10px] text-gold/65 font-semibold tracking-[.18em] uppercase">Barbershop</div>
