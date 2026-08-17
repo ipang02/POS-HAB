@@ -292,7 +292,7 @@ body {
 @keyframes countUp   { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
 .anim-fade-up     { animation: fadeUp .35s ease forwards; }
-.anim-scale       { animation: scaleIn .26s cubic-bezier(.34,1.5,.64,1) forwards; }
+.anim-scale       { animation: scaleIn .26s cubic-bezier(0.16,1,0.3,1) forwards; }
 .anim-slide-right { animation: slideRight .28s ease forwards; }
 .anim-count-up    { animation: countUp .45s ease forwards; }
 
@@ -306,7 +306,7 @@ body {
   padding: 13px 18px; border-radius: 12px;
   border: 1px solid transparent;
   box-shadow: 0 4px 16px rgba(0,0,0,.1), 0 1px 4px rgba(0,0,0,.06);
-  animation: slideRight .3s cubic-bezier(.34,1.5,.64,1) forwards;
+  animation: slideRight .3s cubic-bezier(0.16,1,0.3,1) forwards;
   min-width: 270px; max-width: 360px;
   pointer-events: all;
   background: #FFFFFF;
@@ -343,7 +343,7 @@ body {
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 8px 40px rgba(0,0,0,.12);
-  animation: scaleIn .26s cubic-bezier(.34,1.5,.64,1) forwards;
+  animation: scaleIn .26s cubic-bezier(0.16,1,0.3,1) forwards;
 }
 /* Modal text is always dark in light mode */
 :root:not(.dark) .modal-box [class*="text-white"] { color: #374151 !important; }
@@ -434,7 +434,7 @@ body {
 
 /* ── Stock Bar ─────────────────────────────────────────────── */
 .stock-bar { height: 5px; border-radius: 3px; background: #EBEBEB; overflow: hidden; }
-.stock-fill { height: 100%; border-radius: 3px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+.stock-fill { height: 100%; border-radius: 3px; transform-origin: left; transition: transform .8s cubic-bezier(.4,0,.2,1); }
 
 /* ── Print ─────────────────────────────────────────────────── */
 @media print {

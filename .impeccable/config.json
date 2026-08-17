@@ -1,0 +1,24 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-08-16T10:36:31.735Z",
+        "reason": "print receipt context: Inter chosen for legibility on thermal/low-DPI printers, not as a UI brand font"
+      },
+      {
+        "rule": "layout-transition",
+        "value": "width .32s cubic-bezier(.4,0,.2,1)",
+        "createdAt": "2026-08-17T11:51:31.113Z"
+      },
+      {
+        "rule": "layout-transition",
+        "value": "opacity .2s, width .25s",
+        "createdAt": "2026-08-17T11:51:31.234Z"
+      }
+    ]
+  }
+}

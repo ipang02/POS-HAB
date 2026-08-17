@@ -65,7 +65,7 @@ const Inventory = {
             <span class="${isLow ? 'text-amber-400' : 'text-white'} font-semibold">${item.stock} <span class="text-white/30">/ min ${item.minStock}</span></span>
           </div>
           <div class="stock-bar">
-            <div class="stock-fill" style="width:${pct}%;background:${barColor}"></div>
+            <div class="stock-fill" style="transform:scaleX(${pct/100});background:${barColor}"></div>
           </div>
         </div>
         ${item.commissionRM ? `<p class="text-[10px] text-green-400 mt-2">
