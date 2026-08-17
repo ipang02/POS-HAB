@@ -39,7 +39,7 @@
     <a class="nav-item" data-view="appointments" data-tip="Appointments" onclick="navigate('appointments')">
       <i class="fa-solid fa-calendar-days nav-icon"></i>
       <span class="lbl">Appointments</span>
-      <span class="badge-lbl lbl ml-auto bg-gold/15 text-gold text-[10px] px-2 py-0.5 rounded-full font-semibold" id="nav-appt-badge">3</span>
+      <span class="badge-lbl lbl ml-auto bg-gold/15 text-gold text-[10px] px-2 py-0.5 rounded-full font-semibold hidden" id="nav-appt-badge"></span>
     </a>
 
     <a class="nav-item" data-view="customers" data-tip="Customers" onclick="navigate('customers')">

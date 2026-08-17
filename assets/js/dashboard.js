@@ -17,7 +17,7 @@ const Dashboard = {
     const revenue    = trx.reduce((s, t) => s + (t.total || 0), 0);
     const customers  = new Set(trx.filter(t => t.customer !== 'Walk-in').map(t => t.customer)).size + trx.filter(t => t.customer === 'Walk-in').length;
     const activeBarb = branchBarbers().filter(b => b.status === 'available' || b.status === 'busy').length;
-    const pendingApt = branchAppointments().filter(a => a.status === 'pending').length;
+    const pendingApt = branchAppointments().filter(a => a.status === 'pending' && a.date >= today()).length;
 
     this._animCount('kpi-revenue',       formatRp(revenue));
     this._animCount('kpi-customers',     customers);

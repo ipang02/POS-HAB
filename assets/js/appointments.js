@@ -275,7 +275,7 @@ const Appointments = {
     this.renderList();
 
     // Update pending badge
-    const pending = branchAppointments().filter(a => a.status === 'pending').length;
+    const pending = branchAppointments().filter(a => a.status === 'pending' && a.date >= today()).length;
     const badge = document.getElementById('nav-appt-badge');
     if (badge) { badge.textContent = pending; badge.classList.toggle('hidden', pending === 0); }
   },
