@@ -50,13 +50,15 @@ require 'config.php';
 <?php include 'modals/modal-confirm.php'; ?>
 <?php include 'modals/modal-queue.php'; ?>
 
-<!-- QR Lightbox — lives at body level so position:fixed uses the viewport, not a transformed ancestor -->
-<div id="qr-lightbox" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);align-items:center;justify-content:center" onclick="this.style.display='none'">
-  <div style="position:relative;width:min(600px,90vw);background:#fff;border-radius:16px;overflow:hidden" onclick="event.stopPropagation()">
-    <button onclick="document.getElementById('qr-lightbox').style.display='none'"
-      style="position:absolute;top:12px;right:12px;width:36px;height:36px;background:#C9A84C;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10">
-      <i class="fa-solid fa-xmark" style="color:#000;font-size:15px"></i>
-    </button>
+<!-- QR Lightbox — body-level so position:fixed covers the viewport correctly -->
+<div id="qr-lightbox" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);overflow-y:auto;padding:24px 16px">
+  <div onclick="event.stopPropagation()" style="width:min(520px,90vw);margin:0 auto;background:#fff;border-radius:16px;overflow:hidden">
+    <div style="display:flex;justify-content:flex-end;padding:10px 10px 8px 10px">
+      <button onclick="document.getElementById('qr-lightbox').style.display='none'"
+        style="width:36px;height:36px;background:#C9A84C;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="fa-solid fa-xmark" style="color:#000;font-size:15px"></i>
+      </button>
+    </div>
     <img src="qr-hab.jpeg" alt="Payment QR" style="width:100%;height:auto;display:block">
   </div>
 </div>
