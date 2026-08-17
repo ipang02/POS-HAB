@@ -387,8 +387,105 @@ function closeMobileSidebar() {
 
 // ── Notification Dropdown ────────────────────────────────────
 function toggleNotifDropdown() {
-  document.getElementById('notif-dropdown')?.classList.toggle('hidden');
+  const dd = document.getElementById('notif-dropdown');
+  if (!dd) return;
+  const opening = dd.classList.contains('hidden');
+  dd.classList.toggle('hidden');
+  if (opening) Notifications.render();
 }
+
+// ── Notifications ─────────────────────────────────────────────
+const Notifications = {
+  _sessionRead: false,
+
+  render() {
+    const items = this._collect();
+    this._updateDot(items.length > 0 && !this._sessionRead);
+
+    const list = document.getElementById('notif-list');
+    if (!list) return;
+
+    if (items.length === 0) {
+      list.innerHTML = `
+        <div class="text-center py-8 px-4">
+          <i class="fa-solid fa-circle-check text-2xl text-white/14 mb-2 block"></i>
+          <p class="text-sm font-medium text-white/30">All caught up</p>
+          <p class="text-xs text-white/18 mt-0.5">No pending items</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = items.map(item => `
+      <div onclick="Notifications._goto('${item.action}')"
+        class="flex gap-3 px-4 py-3 hover:bg-white/4 cursor-pointer rounded-xl mx-1 transition-colors">
+        <div class="w-8 h-8 rounded-xl ${item.iconBg} flex items-center justify-center flex-shrink-0 mt-0.5">
+          <i class="fa-solid ${item.icon} ${item.iconColor} text-xs"></i>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-[13px] text-white font-medium leading-snug">${this._esc(item.title)}</p>
+          <p class="text-[11px] text-white/40 truncate">${this._esc(item.sub)}</p>
+        </div>
+      </div>`).join('');
+  },
+
+  _collect() {
+    const items = [];
+
+    // Pending appointments (today and future)
+    branchAppointments()
+      .filter(a => a.status === 'pending' && a.date >= today())
+      .slice(0, 5)
+      .forEach(a => {
+        const svc     = getServiceById(a.serviceId);
+        const timeStr = a.time ? formatTime12(a.time) : '';
+        const dateLabel = a.date === today() ? 'Today' : formatDate(a.date);
+        items.push({
+          title:     'Pending Appointment',
+          sub:       `${a.customer} — ${svc?.name || 'Appointment'}${timeStr ? ' at ' + timeStr : ''} · ${dateLabel}`,
+          icon:      'fa-calendar-check',
+          iconBg:    'bg-gold/15',
+          iconColor: 'text-gold',
+          action:    'appointments'
+        });
+      });
+
+    // Low-stock inventory items
+    branchInventory()
+      .filter(i => (i.stock ?? 0) <= (i.minStock ?? 0))
+      .slice(0, 5)
+      .forEach(i => {
+        items.push({
+          title:     'Low Stock Alert',
+          sub:       `${i.name} — only ${i.stock ?? 0} ${i.unit || 'units'} left`,
+          icon:      'fa-triangle-exclamation',
+          iconBg:    'bg-red-500/15',
+          iconColor: 'text-red-400',
+          action:    'inventory'
+        });
+      });
+
+    return items;
+  },
+
+  markRead() {
+    this._sessionRead = true;
+    this._updateDot(false);
+    document.getElementById('notif-dropdown')?.classList.add('hidden');
+  },
+
+  _goto(view) {
+    this.markRead();
+    navigate(view);
+  },
+
+  _updateDot(show) {
+    document.getElementById('notif-dot')?.classList.toggle('hidden', !show);
+  },
+
+  _esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+};
 
 // ── Branch Switcher ──────────────────────────────────────────
 function toggleBranchDropdown() {
@@ -507,6 +604,7 @@ const App = {
     _renderBranchDropdown();
     Dashboard.init();
     Inventory.checkLowStock();
+    Notifications.render();
     document.getElementById('page-sub').textContent = Router.pages.dashboard.sub();
     try {
       const shiftData = await API.fetchShift(this.currentBranch || 1, today());

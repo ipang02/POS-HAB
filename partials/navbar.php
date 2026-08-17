@@ -52,50 +52,17 @@
         <button onclick="toggleNotifDropdown()"
           class="w-9 h-9 flex items-center justify-center rounded-xl glass hover:border-white/14 relative transition-colors">
           <i class="fa-solid fa-bell text-white/60 text-sm"></i>
-          <span class="absolute top-[7px] right-[7px] w-2 h-2 bg-red-500 rounded-full dot-pulse"></span>
+          <span id="notif-dot" class="absolute top-[7px] right-[7px] w-2 h-2 bg-red-500 rounded-full dot-pulse hidden"></span>
         </button>
 
         <!-- Dropdown -->
         <div id="notif-dropdown" class="hidden absolute right-0 top-full mt-2 w-80 glass-dark rounded-2xl shadow-2xl z-50">
           <div class="flex items-center justify-between px-4 py-3 border-b border-white/6">
             <span class="text-sm font-semibold text-white">Notifications</span>
-            <span class="text-xs text-gold cursor-pointer hover:text-gold-light transition-colors">Mark all read</span>
+            <span onclick="Notifications.markRead()" class="text-xs text-gold cursor-pointer hover:opacity-70 transition-opacity">Mark all read</span>
           </div>
           <div class="py-1 max-h-72 overflow-y-auto" id="notif-list">
-            <!-- populated by JS -->
-            <div class="flex gap-3 px-4 py-3 hover:bg-white/4 cursor-pointer rounded-xl mx-1 transition-colors">
-              <div class="w-8 h-8 rounded-xl bg-gold/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <i class="fa-solid fa-calendar-check text-gold text-xs"></i>
-              </div>
-              <div>
-                <p class="text-[13px] text-white font-medium">New appointment booked</p>
-                <p class="text-[11px] text-white/40">Andi Wijaya — Haircut 14:00</p>
-                <p class="text-[10px] text-white/25 mt-0.5">2 min ago</p>
-              </div>
-            </div>
-            <div class="flex gap-3 px-4 py-3 hover:bg-white/4 cursor-pointer rounded-xl mx-1 transition-colors">
-              <div class="w-8 h-8 rounded-xl bg-red-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <i class="fa-solid fa-triangle-exclamation text-red-400 text-xs"></i>
-              </div>
-              <div>
-                <p class="text-[13px] text-white font-medium">Low stock alert</p>
-                <p class="text-[11px] text-white/40">Barber Scissors — only 3 left</p>
-                <p class="text-[10px] text-white/25 mt-0.5">15 min ago</p>
-              </div>
-            </div>
-            <div class="flex gap-3 px-4 py-3 hover:bg-white/4 cursor-pointer rounded-xl mx-1 transition-colors">
-              <div class="w-8 h-8 rounded-xl bg-green-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <i class="fa-solid fa-circle-check text-green-400 text-xs"></i>
-              </div>
-              <div>
-                <p class="text-[13px] text-white font-medium">Payment received</p>
-                <p class="text-[11px] text-white/40">RM 180 — Full Package</p>
-                <p class="text-[10px] text-white/25 mt-0.5">1 hour ago</p>
-              </div>
-            </div>
-          </div>
-          <div class="px-4 py-3 border-t border-white/6 text-center">
-            <span class="text-xs text-gold/60 cursor-pointer hover:text-gold transition-colors">View all notifications</span>
+            <!-- populated by Notifications.render() -->
           </div>
         </div>
       </div>
