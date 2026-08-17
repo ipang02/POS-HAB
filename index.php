@@ -50,6 +50,18 @@ require 'config.php';
 <?php include 'modals/modal-confirm.php'; ?>
 <?php include 'modals/modal-queue.php'; ?>
 
+<!-- QR Lightbox — must live outside any transformed/animated ancestor so position:fixed uses the viewport -->
+<div id="qr-lightbox" class="hidden fixed inset-0 flex items-center justify-center" style="z-index:9999;background:rgba(0,0,0,.85)" onclick="this.classList.add('hidden')">
+  <div class="relative bg-white rounded-2xl p-6" style="width:600px;max-width:90vw" onclick="event.stopPropagation()">
+    <button onclick="document.getElementById('qr-lightbox').classList.add('hidden')"
+      class="absolute -top-4 -right-4 w-9 h-9 rounded-full flex items-center justify-center text-white font-bold"
+      style="background:#C9A84C;font-size:1rem;z-index:1">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <img src="qr-hab.jpeg" alt="Payment QR" style="width:100%;height:auto;display:block;border-radius:12px">
+  </div>
+</div>
+
 <!-- Toast Container -->
 <div id="toast-wrap" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 no-print pointer-events-none"></div>
 

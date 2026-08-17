@@ -95,18 +95,6 @@
         </div>
       </div>
 
-      <!-- QR Lightbox -->
-      <div id="qr-lightbox" class="hidden fixed inset-0 flex items-center justify-center" style="z-index:9999;background:rgba(0,0,0,.85)">
-        <div class="relative bg-white rounded-2xl p-4" style="width:600px;max-width:90vw">
-          <button onclick="document.getElementById('qr-lightbox').classList.add('hidden')"
-            class="absolute -top-4 -right-4 w-9 h-9 rounded-full flex items-center justify-center text-white font-bold"
-            style="background:#C9A84C;font-size:1rem">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-          <img src="qr-hab.jpeg" alt="Payment QR" style="width:100%;height:auto;display:block;border-radius:12px">
-        </div>
-      </div>
-
       <!-- Customer Info -->
       <div class="mt-4 space-y-3">
         <div>
