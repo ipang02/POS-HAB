@@ -599,6 +599,13 @@ const App = {
       AppData.services.forEach(s => { if (s.branchId == null) s.branchId = 1; });
       AppData.save('services');
     }
+    // Apply theme: localStorage wins, then fall back to saved setting
+    const savedTheme = localStorage.getItem('hab_theme') || AppData.settings.theme || 'light';
+    localStorage.setItem('hab_theme', savedTheme);
+    AppData.settings.theme = savedTheme;
+    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    if (window.applyChartTheme) applyChartTheme();
+
     startClock();
     _updateBranchLabel();
     _renderBranchDropdown();

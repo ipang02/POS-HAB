@@ -64,9 +64,13 @@ const Settings = {
   },
 
   toggleTheme(checkbox) {
-    AppData.settings.theme = checkbox.checked ? 'dark' : 'light';
+    const dark = checkbox.checked;
+    AppData.settings.theme = dark ? 'dark' : 'light';
     AppData.save('settings');
-    showToast(checkbox.checked ? 'Dark mode active' : 'Light mode (reload to fully apply)', 'info');
+    localStorage.setItem('hab_theme', dark ? 'dark' : 'light');
+    document.documentElement.classList.toggle('dark', dark);
+    if (window.applyChartTheme) applyChartTheme();
+    showToast(dark ? 'Dark mode active' : 'Light mode active', 'info');
   },
 
   _renderSecurity() {

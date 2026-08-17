@@ -12,12 +12,22 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="stylesheet" href="assets/css/style.css?v=<?= filemtime('assets/css/style.css') ?>">
 <script>
+/* Apply saved theme before first paint to avoid flash */
+(function(){
+  var t = localStorage.getItem('hab_theme');
+  if (t === 'dark') document.documentElement.classList.add('dark');
+})();
+</script>
+<script>
 tailwind.config = {
   theme: {
     extend: {
       colors: {
-        /* Remapped for soft light minimalist theme */
-        gold: { DEFAULT:'#374151', light:'#4B5563', dark:'#1F2937' },
+        gold: {
+          DEFAULT: 'rgb(var(--gold-rgb) / <alpha-value>)',
+          light:   'rgb(var(--gold-rgb) / 0.7)',
+          dark:    'rgb(var(--gold-rgb) / 0.5)'
+        },
         ink:  { 900:'#F8F8F6', 800:'#F4F4F2', 700:'#FFFFFF', 600:'#EBEBEB', 500:'#E0E0DE' }
       },
       fontFamily: {
@@ -29,14 +39,15 @@ tailwind.config = {
 }
 </script>
 <script>
-/* Override Chart.js defaults for light theme — runs before any chart is rendered */
-document.addEventListener('DOMContentLoaded', function() {
-  if (window.Chart) {
-    Chart.defaults.color = '#6B6B6B';
-    Chart.defaults.font.family = 'Inter';
-    Chart.defaults.borderColor = '#EBEBEB';
-    Chart.defaults.backgroundColor = 'transparent';
-  }
-});
+/* Override Chart.js defaults — updates when theme changes */
+function applyChartTheme() {
+  if (!window.Chart) return;
+  var dark = document.documentElement.classList.contains('dark');
+  Chart.defaults.color = dark ? 'rgba(255,255,255,0.45)' : '#6B6B6B';
+  Chart.defaults.font.family = 'Inter';
+  Chart.defaults.borderColor = dark ? 'rgba(255,255,255,0.08)' : '#EBEBEB';
+  Chart.defaults.backgroundColor = 'transparent';
+}
+document.addEventListener('DOMContentLoaded', applyChartTheme);
 </script>
 </head>
