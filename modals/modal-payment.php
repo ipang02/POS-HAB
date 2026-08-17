@@ -82,7 +82,7 @@
       <div id="pay-panel-qr" class="hidden space-y-4">
         <div class="glass rounded-xl p-5 flex flex-col items-center gap-3">
           <div class="w-44 h-44 bg-white rounded-xl flex items-center justify-center cursor-pointer"
-            id="qr-pay-code" onclick="document.getElementById('qr-lightbox').classList.remove('hidden')"
+            id="qr-pay-code" onclick="var l=document.getElementById('qr-lightbox');l.style.display='flex'"
             title="Click to enlarge"></div>
           <p class="text-sm text-white font-semibold">Scan to Pay</p>
           <p class="text-[11px] text-white/30 flex items-center gap-1">
