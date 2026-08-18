@@ -214,7 +214,7 @@ const Analytics = {
 
     const barberPastels = ['#A89CC8','#6BB8B4','#E8C87A','#E8A598'];
     const barberRevs = branchBarbers().map((b, i) => ({
-      name: b.name.split(' ')[0],
+      name: b.name,
       color: barberPastels[i] || '#7BAFD4',
       rev: trx.filter(t => t.barberId == b.id).reduce((s,t) => s+t.total, 0)
     }));
@@ -249,7 +249,7 @@ const Analytics = {
           <td class="py-2.5 pr-4 text-xs font-mono text-white/50">${t.id}</td>
           <td class="py-2.5 pr-4 text-sm text-white font-medium">${t.customer}</td>
           <td class="py-2.5 pr-4 text-xs text-white/50 hidden md:table-cell max-w-[150px] truncate">${svcNames}</td>
-          <td class="py-2.5 pr-4 text-sm text-white/55 hidden md:table-cell">${barber ? barber.name.split(' ')[0] : '—'}</td>
+          <td class="py-2.5 pr-4 text-sm text-white/55 hidden md:table-cell">${barber ? barber.name : '—'}</td>
           <td class="py-2.5 pr-4 hidden sm:table-cell">
             <span class="flex items-center gap-1.5 text-xs text-white/55">
               <i class="fa-solid ${methodIcon(t.method)} text-gold text-[10px]"></i>${methodLabel(t.method)}
