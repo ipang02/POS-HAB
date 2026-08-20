@@ -437,13 +437,7 @@ body {
 .stock-fill { height: 100%; border-radius: 3px; transform-origin: left; transition: transform .8s cubic-bezier(.4,0,.2,1); }
 
 /* ── Print ─────────────────────────────────────────────────── */
-@page { size: 48mm auto; margin: 3mm 2mm; }
-@media print {
-  body > *        { display: none !important; }
-  #print-receipt  { display: block !important; width: 44mm; margin: 0 auto;
-                    background: #fff; color: #000; }
-  body { background: #fff; margin: 0; padding: 0; }
-}
+/* Receipt prints in a dedicated popup window — no @media print rules needed here */
 #print-receipt { display: none; }
 
 /* ── Mobile Sidebar ────────────────────────────────────────── */
