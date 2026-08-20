@@ -66,8 +66,6 @@ require 'config.php';
 <!-- Toast Container -->
 <div id="toast-wrap" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 no-print pointer-events-none"></div>
 
-<!-- Print Receipt Area -->
-<div id="print-receipt"></div>
 
 <!-- ══ Scripts (order matters) ════════════════════════════════ -->
 <script>window.HAB_API_TOKEN = '<?= htmlspecialchars(defined('API_TOKEN') ? API_TOKEN : '', ENT_QUOTES, 'UTF-8') ?>';</script>

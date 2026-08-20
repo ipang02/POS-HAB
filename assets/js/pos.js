@@ -532,13 +532,68 @@ const POS = {
       if (qrWrap) qrWrap.style.display = '';
     } else if (qrWrap) { qrWrap.style.display = 'none'; }
 
+    // Cache data for print
+    this._pd = {
+      shopName: bs.shopName || s.shopName,
+      address:  bs.address  || s.address,
+      phone:    bs.phone    || s.phone,
+      id:       trx.id,
+      datetime: `${formatDate(trx.date)} ${trx.time}`,
+      customer: trx.customer,
+      barber:   barber ? barber.name : 'Not specified',
+      services: trx.services,
+      subtotal, discAmt, taxAmt,
+      total:    trx.total,
+      method:   methodLabel(trx.method),
+      change:   trx.method === 'cash' ? Math.max(0, tendered - trx.total) : null,
+      footer:   s.receiptFooter,
+    };
+
     openModal('modal-receipt-overlay');
   },
 
   printReceipt() {
-    const content = document.getElementById('receipt-content')?.innerHTML || '';
-    document.getElementById('print-receipt').innerHTML =
-      `<div style="max-width:300px;margin:0 auto;font-family:Inter,sans-serif;color:#000">${content}</div>`;
+    const d = this._pd;
+    if (!d) return;
+
+    const row = (label, value) =>
+      `<tr><td style="padding:1px 4px 1px 0">${label}</td><td style="text-align:right;padding:1px 0">${value}</td></tr>`;
+    const line = `<tr><td colspan="2"><div style="border-top:1px dashed #000;margin:4px 0"></div></td></tr>`;
+
+    const itemRows = d.services.map(s =>
+      row(`${s.name} x${s.qty}`, formatRp(s.price * s.qty))
+    ).join('');
+
+    const html = `
+      <div style="font-family:monospace;font-size:12px;color:#000;text-align:center;line-height:1.5;padding:4px">
+        <div style="font-size:15px;font-weight:bold;margin-bottom:1px">${d.shopName}</div>
+        <div>${d.address}</div>
+        <div>${d.phone}</div>
+        <div style="border-top:1px dashed #000;margin:6px 0"></div>
+        <table style="width:100%;border-collapse:collapse;text-align:left;font-size:11px">
+          ${row('Receipt No.', d.id)}
+          ${row('Date', d.datetime)}
+          ${row('Customer', d.customer)}
+          ${row('Barber', d.barber)}
+          ${line}
+          ${itemRows}
+          ${line}
+          ${row('Subtotal', formatRp(d.subtotal))}
+          ${d.discAmt > 0 ? row('Discount', '&minus;' + formatRp(d.discAmt)) : ''}
+          ${row('Tax', formatRp(d.taxAmt))}
+          <tr style="font-weight:bold">
+            <td style="padding:3px 4px 1px 0;border-top:1px solid #000">TOTAL</td>
+            <td style="text-align:right;padding:3px 0 1px;border-top:1px solid #000">${formatRp(d.total)}</td>
+          </tr>
+          ${row('Method', d.method)}
+          ${d.change !== null ? row('Change', formatRp(d.change)) : ''}
+        </table>
+        <div style="border-top:1px dashed #000;margin:6px 0"></div>
+        <div style="font-size:10px">${d.footer}</div>
+        <div style="font-size:9px;color:#888;margin-top:2px">Powered by HAB POS</div>
+      </div>`;
+
+    document.getElementById('print-receipt').innerHTML = html;
     window.print();
   },
 
