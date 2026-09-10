@@ -293,6 +293,8 @@ if (!$conn->connect_error) {
       color: rgba(255,255,255,.3);
     }
 
+    .hidden { display: none !important; }
+
     .tv-queue-empty {
       flex: 1;
       display: flex;
@@ -389,6 +391,7 @@ if (!$conn->connect_error) {
 <script>
   const BRANCH_ID    = <?= intval($branchId) ?>;
   const SCROLL_AT    = 7;
+  /* BRANCH_ID is injected by PHP from the URL ?branch= param */
   const SECS_PER_ROW = 3;
 
   // ── Audio ────────────────────────────────────────────────────
