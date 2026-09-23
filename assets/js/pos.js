@@ -108,7 +108,8 @@ const POS = {
     }
 
     grid.innerHTML = filtered.map(s => {
-      const inCart = this.cart.find(c => c.key === 'svc_' + s.id);
+      const selectedBarberId = parseInt(document.getElementById('pos-barber')?.value) || 0;
+      const inCart = this.cart.find(c => c.key === 'svc_' + s.id + '_b' + selectedBarberId);
       return `<div class="service-card ${inCart ? 'in-cart' : ''}" onclick="POS.addToCart('service',${s.id})">
         <div class="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center ${inCart ? 'btn-gold' : 'glass-gold'}">
           <i class="fa-solid ${s.icon || 'fa-scissors'} ${inCart ? 'text-ink-900' : 'text-gold'} text-lg"></i>
@@ -189,13 +190,15 @@ const POS = {
 
   addToCart(type, id) {
     if (!this._requireBarber()) return;
+    const selectedBarberId = parseInt(document.getElementById('pos-barber')?.value) || 0;
     if (type === 'service') {
       const svc = getServiceById(id);
       if (!svc || svc.is_active === false) return;
-      const key = 'svc_' + id;
+      // Each service entry is per barber — same service for different barbers = separate rows
+      const key = 'svc_' + id + '_b' + selectedBarberId;
       const existing = this.cart.find(c => c.key === key);
       if (existing) { existing.qty++; }
-      else { this.cart.push({ key, type:'service', id, name: svc.name, price: resolvePrice(svc, this._getSelectedBarber()), qty: 1 }); }
+      else { this.cart.push({ key, type:'service', id, name: svc.name, price: resolvePrice(svc, this._getSelectedBarber()), qty: 1, barberId: selectedBarberId }); }
       showToast(`${svc.name} added`, 'success', 1400);
     } else {
       const item = AppData.inventory.find(i => i.id === id);
@@ -207,7 +210,7 @@ const POS = {
         if (existing.qty >= maxQty) { showToast(`Only ${maxQty} ${item.unit} in stock`, 'warning'); return; }
         existing.qty++;
       } else {
-        this.cart.push({ key, type:'product', id, name: item.name, price: item.price, qty: 1, stock: item.stock, commissionRM: item.commissionRM ?? null });
+        this.cart.push({ key, type:'product', id, name: item.name, price: item.price, qty: 1, stock: item.stock, commissionRM: item.commissionRM ?? null, barberId: selectedBarberId });
       }
       showToast(`${item.name} added`, 'success', 1400);
     }
@@ -288,7 +291,9 @@ const POS = {
     const totalItems = this.cart.reduce((s, c) => s + c.qty, 0);
     if (countEl) countEl.textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''} selected`;
 
-    itemsEl.innerHTML = this.cart.map(item => `
+    itemsEl.innerHTML = this.cart.map(item => {
+      const barberName = item.barberId ? (getBarberById(item.barberId)?.name || '') : '';
+      return `
       <div class="glass rounded-xl p-3">
         <div class="flex items-start justify-between gap-2 mb-2">
           <div class="flex items-center gap-2 flex-1 min-w-0">
@@ -296,7 +301,10 @@ const POS = {
               style="background:${item.type==='product' ? 'rgba(255,255,255,.08)' : 'rgba(201,168,76,.12)'}">
               <i class="fa-solid ${item.type==='product' ? 'fa-box text-white/40' : 'fa-scissors text-gold'} text-[10px]"></i>
             </div>
-            <p class="text-sm font-semibold text-white leading-tight truncate">${item.name}</p>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-white leading-tight truncate">${item.name}</p>
+              ${barberName ? `<p class="text-[10px] text-white/35 truncate">${barberName}</p>` : ''}
+            </div>
           </div>
           <button onclick="POS.removeFromCart('${item.key}')"
             class="text-white/22 hover:text-red-400 transition-colors flex-shrink-0 mt-0.5">
@@ -317,7 +325,8 @@ const POS = {
           </div>
           <span class="text-sm font-bold text-white">${formatRp(item.price * item.qty)}</span>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   },
 
   recalc() {
@@ -371,6 +380,8 @@ const POS = {
     this._prefillCustomer = '';
     document.getElementById('pay-customer-phone').value = '';
     document.getElementById('card-last4').value          = '';
+    const paxEl = document.getElementById('pay-pax-count');
+    if (paxEl) paxEl.value = 1;
 
     this.selectPayMethodByName('cash');
     this._generatePayQR();
@@ -421,6 +432,7 @@ const POS = {
     }
 
     const customer = (document.getElementById('pay-customer-name')?.value || '').trim() || 'Walk-in';
+    const paxCount = Math.max(1, parseInt(document.getElementById('pay-pax-count')?.value || 1));
     const barberId = parseInt(document.getElementById('pos-barber')?.value) || 0;
     const barber   = getBarberById(barberId);
     const subtotal  = this.cart.reduce((s, c) => s + c.price * c.qty, 0);
@@ -431,6 +443,7 @@ const POS = {
 
     const cartServices = this.cart.map(c => ({
       name: c.name, qty: c.qty, price: c.price, type: c.type,
+      barberId: c.barberId || barberId,
       ...(c.type === 'product' && c.commissionRM ? { commissionRM: c.commissionRM } : {})
     }));
     if (this.bookingFeeAdded) {
@@ -440,6 +453,7 @@ const POS = {
     const trx = {
       id:       genId('TRX'),
       customer,
+      paxCount,
       barberId,
       branchId: App.currentBranch || 1,
       services: cartServices,
@@ -479,9 +493,6 @@ const POS = {
     });
     AppData.save('inventory');
 
-    // Mark barber busy
-    if (barber && barber.status === 'available') { barber.status = 'busy'; AppData.save('barbers'); }
-
     closeModal('modal-payment');
     this._showReceipt(trx, barber, discAmt, afterDisc, taxAmt, tendered);
     showToast('Payment successful! ' + formatRp(total), 'success');
@@ -497,7 +508,13 @@ const POS = {
     document.getElementById('rcpt-id').textContent        = trx.id;
     document.getElementById('rcpt-datetime').textContent  = `${formatDate(trx.date)} ${trx.time}`;
     document.getElementById('rcpt-customer').textContent  = trx.customer;
-    document.getElementById('rcpt-barber').textContent    = barber ? barber.name : 'Not specified';
+    document.getElementById('rcpt-pax').textContent       = trx.paxCount || 1;
+    // Build unique barber list from services
+    const serviceBarberIds = [...new Set(trx.services.map(sv => sv.barberId || barberId).filter(Boolean))];
+    const barberLabel = serviceBarberIds.length > 1
+      ? serviceBarberIds.map(bid => getBarberById(bid)?.name || '?').join(', ')
+      : (barber ? barber.name : 'Not specified');
+    document.getElementById('rcpt-barber').textContent = barberLabel;
 
     const subtotal = this.cart.reduce((s, c) => s + c.price * c.qty, 0);
     document.getElementById('rcpt-subtotal').textContent = formatRp(subtotal);
@@ -515,14 +532,36 @@ const POS = {
     if (changeRow) changeRow.style.display = trx.method === 'cash' ? '' : 'none';
     if (changeEl)  changeEl.textContent = formatRp(Math.max(0, tendered - trx.total));
 
-    document.getElementById('rcpt-items').innerHTML = trx.services.map(s =>
-      `<div class="flex justify-between text-xs">
-        <span class="text-white/55 flex items-center gap-1">
-          <i class="fa-solid ${s.type === 'product' ? 'fa-box' : 'fa-scissors'} text-[9px] text-white/30"></i>
-          ${s.name} x${s.qty}
-        </span>
-        <span class="text-white font-medium">${formatRp(s.price * s.qty)}</span>
-      </div>`).join('');
+    // Group services by barber for display
+    const byBarber = {};
+    trx.services.forEach(sv => {
+      const bid = sv.barberId || barberId;
+      if (!byBarber[bid]) byBarber[bid] = [];
+      byBarber[bid].push(sv);
+    });
+    const barberGroups = Object.entries(byBarber);
+    const itemsHtml = barberGroups.length > 1
+      ? barberGroups.map(([bid, svcs]) => {
+          const bName = getBarberById(parseInt(bid))?.name || 'Unknown';
+          const rows = svcs.map(sv => `
+            <div class="flex justify-between text-xs pl-2">
+              <span class="text-white/55 flex items-center gap-1">
+                <i class="fa-solid ${sv.type === 'product' ? 'fa-box' : 'fa-scissors'} text-[9px] text-white/30"></i>
+                ${sv.name} x${sv.qty}
+              </span>
+              <span class="text-white font-medium">${formatRp(sv.price * sv.qty)}</span>
+            </div>`).join('');
+          return `<p class="text-[10px] text-white/30 font-semibold uppercase tracking-wide mt-1.5 mb-0.5">${bName}</p>${rows}`;
+        }).join('')
+      : trx.services.map(sv => `
+          <div class="flex justify-between text-xs">
+            <span class="text-white/55 flex items-center gap-1">
+              <i class="fa-solid ${sv.type === 'product' ? 'fa-box' : 'fa-scissors'} text-[9px] text-white/30"></i>
+              ${sv.name} x${sv.qty}
+            </span>
+            <span class="text-white font-medium">${formatRp(sv.price * sv.qty)}</span>
+          </div>`).join('');
+    document.getElementById('rcpt-items').innerHTML = itemsHtml;
 
     const qrEl   = document.getElementById('rcpt-qr');
     const qrWrap = document.getElementById('rcpt-qr-wrap');
@@ -534,19 +573,21 @@ const POS = {
 
     // Cache data for print
     this._pd = {
-      shopName: bs.shopName || s.shopName,
-      address:  bs.address  || s.address,
-      phone:    bs.phone    || s.phone,
-      id:       trx.id,
-      datetime: `${formatDate(trx.date)} ${trx.time}`,
-      customer: trx.customer,
-      barber:   barber ? barber.name : 'Not specified',
-      services: trx.services,
+      shopName:   bs.shopName || s.shopName,
+      address:    bs.address  || s.address,
+      phone:      bs.phone    || s.phone,
+      id:         trx.id,
+      datetime:   `${formatDate(trx.date)} ${trx.time}`,
+      customer:   trx.customer,
+      paxCount:   trx.paxCount || 1,
+      barber:     barberLabel,
+      byBarber,
+      services:   trx.services,
       subtotal, discAmt, taxAmt,
-      total:    trx.total,
-      method:   methodLabel(trx.method),
-      change:   trx.method === 'cash' ? Math.max(0, tendered - trx.total) : null,
-      footer:   s.receiptFooter,
+      total:      trx.total,
+      method:     methodLabel(trx.method),
+      change:     trx.method === 'cash' ? Math.max(0, tendered - trx.total) : null,
+      footer:     s.receiptFooter,
     };
 
     openModal('modal-receipt-overlay');
@@ -560,9 +601,14 @@ const POS = {
       `<tr><td style="padding:1px 4px 1px 0">${label}</td><td style="text-align:right;padding:1px 0">${value}</td></tr>`;
     const line = `<tr><td colspan="2"><div style="border-top:1px dashed #000;margin:5px 0"></div></td></tr>`;
 
-    const itemRows = d.services.map(s =>
-      row(`${s.name} x${s.qty}`, formatRp(s.price * s.qty))
-    ).join('');
+    const barberGroups = Object.entries(d.byBarber || {});
+    const itemRows = barberGroups.length > 1
+      ? barberGroups.map(([bid, svcs]) => {
+          const bName = getBarberById(parseInt(bid))?.name || 'Unknown';
+          const bRows = svcs.map(s => row(`  ${s.name} x${s.qty}`, formatRp(s.price * s.qty))).join('');
+          return `<tr><td colspan="2" style="padding:3px 0 1px;font-weight:bold;font-size:10px;color:#555">${bName}</td></tr>${bRows}`;
+        }).join('')
+      : d.services.map(s => row(`${s.name} x${s.qty}`, formatRp(s.price * s.qty))).join('');
 
     const body = `
       <div style="text-align:center;margin-bottom:4px">
@@ -575,6 +621,7 @@ const POS = {
         ${row('Receipt No.', d.id)}
         ${row('Date', d.datetime)}
         ${row('Customer', d.customer)}
+        ${row('Pax', d.paxCount || 1)}
         ${row('Barber', d.barber)}
         ${line}
         ${itemRows}

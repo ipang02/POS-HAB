@@ -45,6 +45,10 @@
             <span class="text-white font-semibold" id="rcpt-customer">Walk-in</span>
           </div>
           <div class="flex justify-between text-xs">
+            <span class="text-white/40">Pax</span>
+            <span class="text-white font-semibold" id="rcpt-pax">1</span>
+          </div>
+          <div class="flex justify-between text-xs">
             <span class="text-white/40">Barber</span>
             <span class="text-white font-semibold" id="rcpt-barber">—</span>
           </div>

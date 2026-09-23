@@ -16,13 +16,16 @@ if ($conn->connect_error) {
 
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Schema migrations (idempotent)
+$conn->query("ALTER TABLE `queue` ADD COLUMN `pax_names` TEXT NULL");
+
 // ── GET: public queue fetch ──────────────────────────────────
 if ($method === 'GET') {
     $branchId = intval($_GET['branch_id'] ?? 1);
     $date     = $_GET['date'] ?? date('Y-m-d');
 
     $stmt = $conn->prepare(
-        "SELECT id, name, phone, party_size, status, joined_at
+        "SELECT id, name, phone, party_size, pax_names, status, joined_at
          FROM `queue`
          WHERE branch_id = ? AND session_date = ? AND status != 'done'
          ORDER BY joined_at ASC"
@@ -33,6 +36,7 @@ if ($method === 'GET') {
     $result  = $stmt->get_result();
     $entries = [];
     while ($row = $result->fetch_assoc()) {
+        $row['pax_names'] = $row['pax_names'] ? json_decode($row['pax_names'], true) : null;
         $entries[] = $row;
     }
     echo json_encode(['ok' => true, 'entries' => $entries]);
@@ -45,8 +49,17 @@ if ($method === 'POST') {
     $branchId  = intval($body['branch_id'] ?? 1);
     $name      = trim($body['name'] ?? '');
     $phone     = trim($body['phone'] ?? '');
-    $partySize = max(1, intval($body['party_size'] ?? 1));
     $date      = date('Y-m-d');
+
+    // pax_names: array of additional pax names (not including primary)
+    $paxNamesRaw = $body['pax_names'] ?? null;
+    $paxNames    = null;
+    if (is_array($paxNamesRaw) && count($paxNamesRaw) > 0) {
+        $paxNames = json_encode(array_values(array_map('strval', $paxNamesRaw)));
+    }
+    // party_size = 1 (primary) + additional pax count
+    $partySize = 1 + (is_array($paxNamesRaw) ? count($paxNamesRaw) : max(0, intval($body['party_size'] ?? 1) - 1));
+    $partySize = max(1, $partySize);
 
     if (!$name || !$phone) {
         http_response_code(400);
@@ -55,10 +68,10 @@ if ($method === 'POST') {
     }
 
     $stmt = $conn->prepare(
-        "INSERT INTO `queue` (branch_id, session_date, name, phone, party_size) VALUES (?, ?, ?, ?, ?)"
+        "INSERT INTO `queue` (branch_id, session_date, name, phone, party_size, pax_names) VALUES (?, ?, ?, ?, ?, ?)"
     );
     if (!$stmt) { http_response_code(500); echo json_encode(['ok' => false, 'error' => 'db_error']); exit; }
-    $stmt->bind_param('isssi', $branchId, $date, $name, $phone, $partySize);
+    $stmt->bind_param('isssis', $branchId, $date, $name, $phone, $partySize, $paxNames);
     if (!$stmt->execute()) {
         http_response_code(500);
         echo json_encode(['ok' => false, 'error' => 'insert_failed']);
@@ -67,12 +80,13 @@ if ($method === 'POST') {
     $newId = $stmt->insert_id;
 
     $stmt2 = $conn->prepare(
-        "SELECT id, name, phone, party_size, status, joined_at FROM `queue` WHERE id = ?"
+        "SELECT id, name, phone, party_size, pax_names, status, joined_at FROM `queue` WHERE id = ?"
     );
     if (!$stmt2) { http_response_code(500); echo json_encode(['ok' => false, 'error' => 'db_error']); exit; }
     $stmt2->bind_param('i', $newId);
     $stmt2->execute();
     $entry = $stmt2->get_result()->fetch_assoc();
+    if ($entry) $entry['pax_names'] = $entry['pax_names'] ? json_decode($entry['pax_names'], true) : null;
 
     echo json_encode(['ok' => true, 'entry' => $entry]);
     exit;

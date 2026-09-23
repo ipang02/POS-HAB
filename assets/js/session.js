@@ -98,13 +98,20 @@ const SessionManager = {
   },
 
   // ── Render session status bar when shift is open ────────────
+  _toMYT(utcTime) {
+    if (!utcTime) return '—';
+    const [h, m] = utcTime.split(':').map(Number);
+    const myt = new Date(Date.UTC(2000, 0, 1, h + 8, m));
+    return String(myt.getUTCHours()).padStart(2, '0') + ':' + String(myt.getUTCMinutes()).padStart(2, '0');
+  },
+
   renderStatusBar() {
     const bar = document.getElementById('pos-session-bar');
     if (!bar) return;
     bar.innerHTML = `
       <div class="flex items-center gap-3 text-white/50 text-xs">
         <i class="fa-solid fa-circle text-green-400 text-[8px]"></i>
-        <span>Session opened at <strong class="text-white">${App.session.openTime || '—'}</strong></span>
+        <span>Session opened at <strong class="text-white">${this._toMYT(App.session.openTime)}</strong></span>
         <span class="text-white/20">·</span>
         <span>Float: <strong class="text-white">${formatRp(App.session.openFloat)}</strong></span>
       </div>
@@ -186,12 +193,26 @@ const SessionManager = {
 
     const barberMap = {};
     trx.forEach(t => {
-      const key = t.barberId || 0;
-      if (!barberMap[key]) {
-        barberMap[key] = { name: getBarberById(key)?.name || 'Unknown / Walk-in', total: 0, count: 0 };
+      // Credit revenue per item to each item's barber (falls back to transaction barber)
+      const itemsByBarber = {};
+      (t.services || []).forEach(sv => {
+        const bid = sv.barberId || t.barberId || 0;
+        itemsByBarber[bid] = (itemsByBarber[bid] || 0) + sv.price * sv.qty;
+      });
+      Object.entries(itemsByBarber).forEach(([bid, rev]) => {
+        const key = parseInt(bid) || 0;
+        if (!barberMap[key]) {
+          barberMap[key] = { name: getBarberById(key)?.name || 'Unknown / Walk-in', total: 0, count: 0, pax: 0 };
+        }
+        barberMap[key].total += rev;
+      });
+      // Count the transaction and pax once — attribute to the transaction's primary barber
+      const primaryKey = t.barberId || 0;
+      if (!barberMap[primaryKey]) {
+        barberMap[primaryKey] = { name: getBarberById(primaryKey)?.name || 'Unknown / Walk-in', total: 0, count: 0, pax: 0 };
       }
-      barberMap[key].total += t.total;
-      barberMap[key].count++;
+      barberMap[primaryKey].count++;
+      barberMap[primaryKey].pax += (t.paxCount || 1);
     });
 
     const cashSales    = methods.cash;
@@ -210,7 +231,7 @@ const SessionManager = {
     const barberRows = Object.values(barberMap).length
       ? Object.values(barberMap).map(b => `
           <div class="flex justify-between text-xs py-1">
-            <span class="text-white/45">${b.name} <span class="text-white/25">(${b.count} trx)</span></span>
+            <span class="text-white/45">${b.name} <span class="text-white/25">(${b.count} trx · ${b.pax} pax)</span></span>
             <span class="font-semibold text-white">${formatRp(b.total)}</span>
           </div>`).join('')
       : '<p class="text-xs text-white/25 py-1">No transactions this shift</p>';

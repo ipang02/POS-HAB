@@ -213,11 +213,16 @@ const Analytics = {
     if (this.charts.barberPerf) this.charts.barberPerf.destroy();
 
     const barberPastels = ['#A89CC8','#6BB8B4','#E8C87A','#E8A598'];
-    const barberRevs = branchBarbers().map((b, i) => ({
-      name: b.name,
-      color: barberPastels[i] || '#7BAFD4',
-      rev: trx.filter(t => t.barberId == b.id).reduce((s,t) => s+t.total, 0)
-    }));
+    const barberRevs = branchBarbers().map((b, i) => {
+      let rev = 0;
+      trx.forEach(t => {
+        (t.services || []).forEach(sv => {
+          const bid = sv.barberId || t.barberId;
+          if (bid == b.id) rev += sv.price * sv.qty;
+        });
+      });
+      return { name: b.name, color: barberPastels[i] || '#7BAFD4', rev };
+    });
 
     this.charts.barberPerf = new Chart(ctx, {
       type:'bar',
@@ -240,25 +245,49 @@ const Analytics = {
     const tbody = document.getElementById('all-trx-tbody');
     if (!tbody) return;
     const sorted = [...trx].sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time));
+    const isOwner = typeof Auth !== 'undefined' && Auth._role === 'owner';
 
     tbody.innerHTML = sorted.map(t => {
-      const barber   = getBarberById(t.barberId);
+      const barberIds = new Set((t.services || []).map(s => s.barberId || t.barberId).filter(Boolean));
+      const barberNames = [...barberIds].map(bid => getBarberById(bid)?.name || '?').join(', ') || (getBarberById(t.barberId)?.name || '—');
       const svcNames = t.services.map(s => s.name).join(', ');
+      const delBtn = isOwner
+        ? `<button onclick="Analytics.deleteTransaction('${t.id}')" class="w-6 h-6 rounded-md flex items-center justify-center text-red-400/50 hover:text-red-400 hover:bg-red-400/10 transition-colors flex-shrink-0" title="Delete transaction"><i class="fa-solid fa-trash text-[9px]"></i></button>`
+        : '';
       return `
         <tr class="hover:bg-white/2 transition-colors">
           <td class="py-2.5 pr-4 text-xs font-mono text-white/50">${t.id}</td>
           <td class="py-2.5 pr-4 text-sm text-white font-medium">${t.customer}</td>
+          <td class="py-2.5 pr-4 text-xs text-white/55 hidden sm:table-cell">${t.paxCount || 1}</td>
           <td class="py-2.5 pr-4 text-xs text-white/50 hidden md:table-cell max-w-[150px] truncate">${svcNames}</td>
-          <td class="py-2.5 pr-4 text-sm text-white/55 hidden md:table-cell">${barber ? barber.name : '—'}</td>
+          <td class="py-2.5 pr-4 text-sm text-white/55 hidden md:table-cell">${barberNames}</td>
           <td class="py-2.5 pr-4 hidden sm:table-cell">
             <span class="flex items-center gap-1.5 text-xs text-white/55">
               <i class="fa-solid ${methodIcon(t.method)} text-gold text-[10px]"></i>${methodLabel(t.method)}
             </span>
           </td>
           <td class="py-2.5 pr-4 text-xs text-white/40 hidden lg:table-cell">${t.date} ${t.time}</td>
-          <td class="py-2.5 text-right text-sm font-semibold text-white">${formatRp(t.total)}</td>
+          <td class="py-2.5 text-right text-sm font-semibold text-white">
+            <div class="flex items-center justify-end gap-2">
+              <span>${formatRp(t.total)}</span>
+              ${delBtn}
+            </div>
+          </td>
         </tr>`;
-    }).join('') || `<tr><td colspan="7" class="text-center py-8 text-white/25 text-sm">No transactions in this range</td></tr>`;
+    }).join('') || `<tr><td colspan="8" class="text-center py-8 text-white/25 text-sm">No transactions in this range</td></tr>`;
+  },
+
+  deleteTransaction(id) {
+    SessionManager.requireOwnerPin(() => this._doDeleteTransaction(id));
+  },
+
+  async _doDeleteTransaction(id) {
+    const res = await API.deleteTransaction(id);
+    if (!res.ok) { showToast('Failed to delete transaction', 'error'); return; }
+    AppData.transactions = AppData.transactions.filter(t => t.id !== id);
+    StorageManager.save('transactions', AppData.transactions);
+    showToast('Transaction deleted', 'warning');
+    this.build();
   },
 
   _renderCommissionTable(trx) {
@@ -270,10 +299,11 @@ const Analytics = {
     trx.forEach(t => {
       (t.services || []).forEach(s => {
         if (s.type !== 'product' || !s.commissionRM) return;
-        if (!barberMap[t.barberId]) barberMap[t.barberId] = { sold: 0, revenue: 0, commission: 0 };
-        barberMap[t.barberId].sold       += (s.qty || 1);
-        barberMap[t.barberId].revenue    += (s.price || 0) * (s.qty || 1);
-        barberMap[t.barberId].commission += s.commissionRM * (s.qty || 1);
+        const bid = s.barberId || t.barberId;
+        if (!barberMap[bid]) barberMap[bid] = { sold: 0, revenue: 0, commission: 0 };
+        barberMap[bid].sold       += (s.qty || 1);
+        barberMap[bid].revenue    += (s.price || 0) * (s.qty || 1);
+        barberMap[bid].commission += s.commissionRM * (s.qty || 1);
       });
     });
 
@@ -309,11 +339,12 @@ const Analytics = {
 
   exportCSV() {
     const trx = this._filterTrx();
-    const rows = [['ID','Customer','Services','Barber','Method','Total','Date','Time']];
+    const rows = [['ID','Customer','Pax','Services','Barber','Method','Total','Date','Time']];
     trx.forEach(t => {
       const barber = getBarberById(t.barberId);
       rows.push([
         t.id, t.customer,
+        t.paxCount || 1,
         t.services.map(s => s.name + 'x' + s.qty).join('; '),
         barber ? barber.name : '',
         methodLabel(t.method),

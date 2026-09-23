@@ -113,6 +113,18 @@ const API = {
     fetch('api/transactions.php', { method: 'DELETE', headers: this._h() }).catch(() => {});
   },
 
+  async deleteTransaction(id) {
+    try {
+      const res = await fetch('api/transactions.php', {
+        method: 'DELETE',
+        headers: this._h(),
+        body: JSON.stringify({ id })
+      });
+      if (!res.ok) return { ok: false };
+      return res.json();
+    } catch { return { ok: false }; }
+  },
+
   async fetchShift(branchId, date) {
     try {
       const res = await fetch(`api/shifts.php?branch_id=${branchId}&date=${date}`, { headers: this._h() });

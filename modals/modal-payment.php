@@ -106,6 +106,10 @@
           <input type="text" id="pay-customer-phone" placeholder="019-3456789" class="inp">
           <p class="text-[10px] text-white/30 mt-1">Auto-creates a customer profile if new</p>
         </div>
+        <div>
+          <label class="text-xs text-white/45 mb-1.5 block font-medium">Number of Pax</label>
+          <input type="number" id="pay-pax-count" min="1" max="20" value="1" class="inp text-center font-bold">
+        </div>
       </div>
 
       <!-- Actions -->

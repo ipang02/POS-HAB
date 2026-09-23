@@ -54,7 +54,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="text-xs text-white/45 mb-1.5 block font-medium">Date <span class="text-red-400">*</span></label>
-            <input type="date" id="appt-date" class="inp">
+            <input type="date" id="appt-date" class="inp" onchange="Appointments._setTimeConstraints(this.value)">
           </div>
           <div>
             <label class="text-xs text-white/45 mb-1.5 block font-medium">Time <span class="text-red-400">*</span></label>

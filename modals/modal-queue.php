@@ -28,10 +28,18 @@
           <input id="qadd-phone" type="tel" class="inp" placeholder="e.g. 0123456789">
         </div>
 
-        <!-- Total in Group -->
+        <!-- Additional Pax Names -->
         <div>
-          <label class="text-xs text-white/45 mb-1.5 block font-medium">Total in Group</label>
-          <input id="qadd-party" type="number" class="inp" min="1" max="10" value="1">
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs text-white/45 font-medium">Additional Pax Names</label>
+            <button type="button" onclick="QueueManager.addPaxRow()"
+              class="text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors"
+              style="background:rgba(201,168,76,.12);color:#C9A84C">
+              <i class="fa-solid fa-plus text-[9px]"></i> Add Pax
+            </button>
+          </div>
+          <div id="qadd-pax-rows" class="space-y-2"></div>
+          <p class="text-[10px] text-white/25 mt-1.5">Leave empty for solo. Add names for each additional person.</p>
         </div>
 
       </div>

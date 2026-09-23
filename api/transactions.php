@@ -19,12 +19,30 @@ if (!defined('API_TOKEN') || $token !== API_TOKEN) {
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-// ── DELETE: clear all transactions ───────────────────────────
+// Schema migrations (idempotent — errno 1060 silently ignored)
+$conn->query("ALTER TABLE `transactions` ADD COLUMN `pax_count` TINYINT UNSIGNED NOT NULL DEFAULT 1");
+$conn->query("ALTER TABLE `transaction_items` ADD COLUMN `barber_id` INT NULL");
+
+// ── DELETE: clear all OR delete single transaction ───────────
 if ($method === 'DELETE') {
-    $conn->query("SET FOREIGN_KEY_CHECKS = 0");
-    $ok = $conn->query("DELETE FROM transaction_items") && $conn->query("DELETE FROM transactions");
-    $conn->query("SET FOREIGN_KEY_CHECKS = 1");
-    echo json_encode(['ok' => (bool)$ok]);
+    $body = json_decode(file_get_contents('php://input'), true) ?? [];
+    $id   = $body['id'] ?? ($_GET['id'] ?? null);
+
+    if ($id) {
+        // Delete single transaction by ID
+        $id = (string)$id;
+        $s1 = $conn->prepare("DELETE FROM transaction_items WHERE transaction_id = ?");
+        if ($s1) { $s1->bind_param('s', $id); $s1->execute(); $s1->close(); }
+        $s2 = $conn->prepare("DELETE FROM transactions WHERE id = ?");
+        if ($s2) { $s2->bind_param('s', $id); $ok = $s2->execute(); $s2->close(); }
+        echo json_encode(['ok' => true]);
+    } else {
+        // Clear all transactions
+        $conn->query("SET FOREIGN_KEY_CHECKS = 0");
+        $ok = $conn->query("DELETE FROM transaction_items") && $conn->query("DELETE FROM transactions");
+        $conn->query("SET FOREIGN_KEY_CHECKS = 1");
+        echo json_encode(['ok' => (bool)$ok]);
+    }
     exit;
 }
 
@@ -34,9 +52,11 @@ if ($method === 'GET') {
         SELECT
             t.id, t.branch_id, t.customer, t.customer_phone, t.barber_id,
             t.discount, t.tax, t.total, t.method, t.tendered,
+            IFNULL(t.pax_count, 1)          AS pax_count,
             DATE_FORMAT(t.date, '%Y-%m-%d') AS date,
             TIME_FORMAT(t.time, '%H:%i')    AS time,
-            ti.item_type, ti.item_name, ti.qty, ti.price, ti.commission_rm
+            ti.item_type, ti.item_name, ti.qty, ti.price, ti.commission_rm,
+            ti.barber_id                    AS item_barber_id
         FROM transactions t
         LEFT JOIN transaction_items ti ON ti.transaction_id = t.id
         ORDER BY t.date DESC, t.time DESC, t.id, ti.id
@@ -52,6 +72,7 @@ if ($method === 'GET') {
                 'customer'      => $row['customer'],
                 'customerPhone' => $row['customer_phone'] ?? '',
                 'barberId'      => $row['barber_id'] !== null ? (int)$row['barber_id'] : 0,
+                'paxCount'      => (int)($row['pax_count'] ?? 1),
                 'discount'      => (int)$row['discount'],
                 'tax'           => (int)$row['tax'],
                 'total'         => (float)$row['total'],
@@ -72,6 +93,9 @@ if ($method === 'GET') {
             if ($row['commission_rm'] !== null) {
                 $item['commissionRM'] = (float)$row['commission_rm'];
             }
+            if ($row['item_barber_id']) {
+                $item['barberId'] = (int)$row['item_barber_id'];
+            }
             $trxMap[$id]['services'][] = $item;
         }
     }
@@ -88,6 +112,7 @@ if ($method === 'POST') {
     $customer      = $trx['customer']         ?? 'Walk-in';
     $customerPhone = $trx['customerPhone']    ?? null;
     $barberId      = ($trx['barberId'] ?? 0) ?: null;
+    $paxCount      = max(1, (int)($trx['paxCount'] ?? 1));
     $discount      = (int)($trx['discount']   ?? 0);
     $tax           = (int)($trx['tax']        ?? 6);
     $total         = (float)($trx['total']    ?? 0);
@@ -109,13 +134,13 @@ if ($method === 'POST') {
     $stmt = $conn->prepare(
         "INSERT INTO transactions
              (id, branch_id, customer, customer_phone, barber_id,
-              discount, tax, total, method, tendered, date, time)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+              pax_count, discount, tax, total, method, tendered, date, time)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
     $stmt->bind_param(
-        'sisssiidsdss',
+        'sisssiiidsdss',
         $id, $branchId, $customer, $customerPhone, $barberId,
-        $discount, $tax, $total, $method_pay, $tendered, $date, $time
+        $paxCount, $discount, $tax, $total, $method_pay, $tendered, $date, $time
     );
     $ok = $stmt->execute();
     $stmt->close();
@@ -126,14 +151,14 @@ if ($method === 'POST') {
         exit;
     }
 
-    // Insert items — two prepared statements: with and without commission_rm
+    // Insert items — two prepared statements: with and without commission_rm (both include barber_id)
     $stmtC = $conn->prepare(
-        "INSERT INTO transaction_items (transaction_id, item_type, item_name, qty, price, commission_rm)
-         VALUES (?, ?, ?, ?, ?, ?)"
+        "INSERT INTO transaction_items (transaction_id, item_type, item_name, qty, price, commission_rm, barber_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?)"
     );
     $stmtN = $conn->prepare(
-        "INSERT INTO transaction_items (transaction_id, item_type, item_name, qty, price)
-         VALUES (?, ?, ?, ?, ?)"
+        "INSERT INTO transaction_items (transaction_id, item_type, item_name, qty, price, barber_id)
+         VALUES (?, ?, ?, ?, ?, ?)"
     );
 
     if (!$stmtC || !$stmtN) {
@@ -146,17 +171,18 @@ if ($method === 'POST') {
     }
 
     foreach ($services as $svc) {
-        $type  = $svc['type']  ?? 'service';
-        $name  = $svc['name']  ?? '';
-        $qty   = (int)($svc['qty']    ?? 1);
-        $price = (float)($svc['price'] ?? 0);
+        $type         = $svc['type']  ?? 'service';
+        $name         = $svc['name']  ?? '';
+        $qty          = (int)($svc['qty']    ?? 1);
+        $price        = (float)($svc['price'] ?? 0);
+        $itemBarberId = max(0, (int)($svc['barberId'] ?? 0));
 
         if (isset($svc['commissionRM'])) {
             $comm = (float)$svc['commissionRM'];
-            $stmtC->bind_param('sssidd', $id, $type, $name, $qty, $price, $comm);
+            $stmtC->bind_param('sssiddi', $id, $type, $name, $qty, $price, $comm, $itemBarberId);
             $itemOk = $stmtC->execute();
         } else {
-            $stmtN->bind_param('sssid', $id, $type, $name, $qty, $price);
+            $stmtN->bind_param('sssidi', $id, $type, $name, $qty, $price, $itemBarberId);
             $itemOk = $stmtN->execute();
         }
         if (!$itemOk) {

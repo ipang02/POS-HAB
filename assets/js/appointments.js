@@ -32,6 +32,25 @@ const Appointments = {
     }
   },
 
+  // ── Business Hours helpers ───────────────────────────────────
+  _getBusinessHours(dateStr) {
+    const dayKeys = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const bs = getBranchSettings();
+    if (!bs?.hours) return { open: '09:00', close: '21:00' };
+    const d = new Date(dateStr + 'T00:00:00');
+    const dh = bs.hours[dayKeys[d.getDay()]];
+    if (!dh || !dh.active) return null;
+    return { open: dh.open || '09:00', close: dh.close || '21:00' };
+  },
+
+  _setTimeConstraints(dateStr) {
+    const bh = this._getBusinessHours(dateStr);
+    const el = document.getElementById('appt-time');
+    if (!el) return;
+    el.min = bh ? bh.open : '';
+    el.max = bh ? bh.close : '';
+  },
+
   // ── Calendar ────────────────────────────────────────────────
   renderCalendar() {
     const grid = document.getElementById('cal-grid');
@@ -54,7 +73,18 @@ const Appointments = {
     if (labelEl) labelEl.textContent = `${monday.toLocaleDateString('en',{month:'short',day:'numeric'})} — ${days[6].toLocaleDateString('en',{month:'short',day:'numeric',year:'numeric'})}`;
     if (subEl) subEl.textContent = `${branchAppointments().filter(a => a.date >= weekStart && a.date <= weekEnd).length} appointments this week`;
 
-    const hours = Array.from({ length: 13 }, (_, i) => 8 + i); // 08-20
+    // Compute hour range from branch business hours across all displayed days
+    let minHour = 8, maxHour = 20;
+    const dayKeys = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const bs = getBranchSettings();
+    if (bs?.hours) {
+      const activeTimes = days.map(d => bs.hours[dayKeys[d.getDay()]]).filter(dh => dh?.active);
+      if (activeTimes.length) {
+        minHour = Math.min(...activeTimes.map(dh => parseInt((dh.open || '08:00').split(':')[0])));
+        maxHour = Math.max(...activeTimes.map(dh => parseInt((dh.close || '20:00').split(':')[0])));
+      }
+    }
+    const hours = Array.from({ length: maxHour - minHour + 1 }, (_, i) => minHour + i);
 
     let html = `<div style="display:grid;grid-template-columns:56px repeat(7,1fr)">`;
 
@@ -171,8 +201,11 @@ const Appointments = {
     document.getElementById('appt-phone').value    = '';
     document.getElementById('appt-service').value  = '';
     document.getElementById('appt-barber').value   = '';
-    document.getElementById('appt-date').value     = date || today();
-    document.getElementById('appt-time').value     = time || '09:00';
+    const apptDate = date || today();
+    document.getElementById('appt-date').value     = apptDate;
+    this._setTimeConstraints(apptDate);
+    const bh = this._getBusinessHours(apptDate);
+    document.getElementById('appt-time').value     = time || (bh ? bh.open : '09:00');
     document.getElementById('appt-status').value   = 'pending';
     document.getElementById('appt-notes').value    = '';
     document.getElementById('appt-duration-info').classList.add('hidden');
@@ -191,6 +224,7 @@ const Appointments = {
     document.getElementById('appt-service').value  = a.serviceId;
     document.getElementById('appt-barber').value   = a.barberId;
     document.getElementById('appt-date').value     = a.date;
+    this._setTimeConstraints(a.date);
     document.getElementById('appt-time').value     = a.time;
     document.getElementById('appt-status').value   = a.status;
     document.getElementById('appt-notes').value    = a.notes || '';

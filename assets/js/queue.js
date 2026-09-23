@@ -70,8 +70,9 @@ const QueueManager = {
   _buildItem(entry, pos) {
     const isServing  = entry.status === 'serving';
     const phone      = '****' + String(entry.phone).slice(-4);
-    const partyBadge = entry.party_size > 1
-      ? `<span class="text-[10px] text-gold ml-0.5">+${entry.party_size - 1}</span>` : '';
+    const extraPax   = entry.pax_names?.length || (entry.party_size > 1 ? entry.party_size - 1 : 0);
+    const partyBadge = extraPax > 0
+      ? `<span class="text-[10px] text-gold ml-0.5">+${extraPax}</span>` : '';
 
     const div = document.createElement('div');
     div.dataset.id  = String(entry.id);
@@ -144,21 +145,39 @@ const QueueManager = {
   openAddModal() {
     document.getElementById('qadd-name').value  = '';
     document.getElementById('qadd-phone').value = '';
-    document.getElementById('qadd-party').value = '1';
+    document.getElementById('qadd-pax-rows').innerHTML = '';
     openModal('modal-queue-add');
+    setTimeout(() => document.getElementById('qadd-name')?.focus(), 150);
+  },
+
+  addPaxRow() {
+    const container = document.getElementById('qadd-pax-rows');
+    if (!container) return;
+    const idx = container.children.length + 1;
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-2';
+    row.innerHTML = `
+      <input type="text" class="inp flex-1" placeholder="Pax ${idx + 1} name" style="font-size:.8rem;padding:.55rem .8rem">
+      <button type="button" onclick="this.parentElement.remove()"
+        class="w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center text-red-400/50 hover:text-red-400 hover:bg-red-400/10 transition-colors">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>`;
+    container.appendChild(row);
   },
 
   async add() {
-    const name      = document.getElementById('qadd-name').value.trim();
-    const phone     = document.getElementById('qadd-phone').value.trim();
-    const partySize = Math.max(1, parseInt(document.getElementById('qadd-party').value, 10) || 1);
+    const name  = document.getElementById('qadd-name').value.trim();
+    const phone = document.getElementById('qadd-phone').value.trim();
     if (!name || !phone) { showToast('Name and phone required', 'error'); return; }
+
+    const paxRows  = [...document.querySelectorAll('#qadd-pax-rows input')];
+    const paxNames = paxRows.map(el => el.value.trim()).filter(Boolean);
 
     try {
       const res  = await fetch('api/queue.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ branch_id: App.currentBranch || 1, name, phone, party_size: partySize })
+        body: JSON.stringify({ branch_id: App.currentBranch || 1, name, phone, pax_names: paxNames })
       });
       const data = await res.json();
       if (data.ok) {
@@ -235,8 +254,12 @@ const QueuePage = {
   _buildCard(entry, pos, isServing) {
     const phone    = '****' + String(entry.phone).slice(-4);
     const joinTime = entry.joined_at ? String(entry.joined_at).split(' ')[1]?.slice(0, 5) : '';
-    const party    = entry.party_size > 1
-      ? `<span class="text-xs font-semibold" style="color:rgba(201,168,76,.8)">+${entry.party_size - 1} pax</span>` : '';
+    const extraPax = entry.pax_names?.length || (entry.party_size > 1 ? entry.party_size - 1 : 0);
+    const paxNamesStr = entry.pax_names?.length
+      ? entry.pax_names.map(n => this._esc(n)).join(', ')
+      : '';
+    const party = extraPax > 0
+      ? `<span class="text-xs font-semibold" style="color:rgba(201,168,76,.8)" title="${paxNamesStr || `+${extraPax} more`}">+${extraPax} pax</span>` : '';
 
     const posBadge = pos != null
       ? `<div class="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0" style="background:rgba(201,168,76,.15);color:rgba(255,255,255,.75)">#${pos}</div>`
@@ -333,21 +356,24 @@ const QueuePage = {
   openAddModal() {
     document.getElementById('qadd-name').value  = '';
     document.getElementById('qadd-phone').value = '';
-    document.getElementById('qadd-party').value = '1';
+    document.getElementById('qadd-pax-rows').innerHTML = '';
     openModal('modal-queue-add');
+    setTimeout(() => document.getElementById('qadd-name')?.focus(), 150);
   },
 
   async add() {
-    const name      = document.getElementById('qadd-name').value.trim();
-    const phone     = document.getElementById('qadd-phone').value.trim();
-    const partySize = Math.max(1, parseInt(document.getElementById('qadd-party').value, 10) || 1);
+    const name  = document.getElementById('qadd-name').value.trim();
+    const phone = document.getElementById('qadd-phone').value.trim();
     if (!name || !phone) { showToast('Name and phone required', 'error'); return; }
+
+    const paxRows  = [...document.querySelectorAll('#qadd-pax-rows input')];
+    const paxNames = paxRows.map(el => el.value.trim()).filter(Boolean);
 
     try {
       const res  = await fetch('api/queue.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ branch_id: App.currentBranch || 1, name, phone, party_size: partySize })
+        body: JSON.stringify({ branch_id: App.currentBranch || 1, name, phone, pax_names: paxNames })
       });
       const data = await res.json();
       if (data.ok) {
