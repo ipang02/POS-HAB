@@ -31,6 +31,7 @@ require 'config.php';
     <?php include 'views/appointments.php'; ?>
     <?php include 'views/barbers.php'; ?>
     <?php include 'views/analytics.php'; ?>
+    <?php include 'views/monthly-report.php'; ?>
     <?php include 'views/inventory.php'; ?>
     <?php include 'views/settings.php'; ?>
     <?php include 'views/customers.php'; ?>
@@ -80,6 +81,7 @@ require 'config.php';
 <script src="assets/js/appointments.js?v=<?= filemtime('assets/js/appointments.js') ?>"></script>
 <script src="assets/js/barbers.js?v=<?= filemtime('assets/js/barbers.js') ?>"></script>
 <script src="assets/js/analytics.js?v=<?= filemtime('assets/js/analytics.js') ?>"></script>
+<script src="assets/js/monthly-report.js?v=<?= filemtime('assets/js/monthly-report.js') ?>"></script>
 <script src="assets/js/inventory.js?v=<?= filemtime('assets/js/inventory.js') ?>"></script>
 <script src="assets/js/settings.js?v=<?= filemtime('assets/js/settings.js') ?>"></script>
 <script src="assets/js/setup-wizard.js?v=<?= filemtime('assets/js/setup-wizard.js') ?>"></script>

@@ -43,6 +43,7 @@
             <th class="text-left text-[10px] font-semibold text-white/28 uppercase tracking-wide pb-2.5 pr-4">Barber</th>
             <th class="text-left text-[10px] font-semibold text-white/28 uppercase tracking-wide pb-2.5 pr-4 hidden sm:table-cell">Status</th>
             <th class="text-left text-[10px] font-semibold text-white/28 uppercase tracking-wide pb-2.5 pr-4">Appts Today</th>
+            <th class="text-left text-[10px] font-semibold text-white/28 uppercase tracking-wide pb-2.5 pr-4">Pax Today</th>
             <th class="text-left text-[10px] font-semibold text-white/28 uppercase tracking-wide pb-2.5 pr-4 hidden md:table-cell">Commission %</th>
             <th class="text-right text-[10px] font-semibold text-white/28 uppercase tracking-wide pb-2.5">Earnings Today</th>
           </tr>

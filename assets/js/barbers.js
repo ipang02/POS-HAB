@@ -57,7 +57,7 @@ const Barbers = {
     const todayTrx   = AppData.transactions.filter(t => t.date === today() && t.barberId == b.id);
     const revenue    = todayTrx.reduce((s, t) => s + t.total, 0);
     const commission = Math.round(revenue * b.commission / 100);
-    const apptToday  = AppData.appointments.filter(a => a.date === today() && a.barberId == b.id);
+    const paxToday   = todayTrx.reduce((s, t) => s + (t.paxCount || 1), 0);
 
     const statusColors = { available:'#22c55e', busy:'#f59e0b', off:'#9ca3af' };
     const statusBg     = { available:'rgba(34,197,94,.1)', busy:'rgba(245,158,11,.1)', off:'rgba(156,163,175,.1)' };
@@ -113,8 +113,8 @@ const Barbers = {
         <!-- Stats -->
         <div class="grid grid-cols-3 gap-2 border-t border-white/6 pt-4">
           <div class="text-center">
-            <div class="text-base font-bold text-white">${apptToday.length}</div>
-            <div class="text-[10px] text-white/35">Appts</div>
+            <div class="text-base font-bold text-white">${paxToday}</div>
+            <div class="text-[10px] text-white/35">Pax Today</div>
           </div>
           <div class="text-center border-x border-white/6">
             <div class="text-sm font-bold gold-text truncate">${formatRp(revenue).replace('RM ','')}</div>
@@ -147,6 +147,7 @@ const Barbers = {
       const trx   = AppData.transactions.filter(t => t.date === today() && t.barberId == b.id);
       const rev   = trx.reduce((s, t) => s + t.total, 0);
       const comm  = Math.round(rev * b.commission / 100);
+      const pax   = trx.reduce((s, t) => s + (t.paxCount || 1), 0);
       return `
         <tr class="hover:bg-white/2 transition-colors">
           <td class="py-2.5 pr-4">
@@ -160,6 +161,7 @@ const Barbers = {
             <span class="badge badge-${b.status}">${statusLabel(b.status)}</span>
           </td>
           <td class="py-2.5 pr-4 text-sm text-white">${appts.length} <span class="text-white/35">appts</span></td>
+          <td class="py-2.5 pr-4 text-sm font-semibold text-white">${pax} <span class="text-white/35 font-normal">pax</span></td>
           <td class="py-2.5 pr-4 hidden md:table-cell text-sm text-white/60">${b.commission}%</td>
           <td class="py-2.5 text-right">
             <div class="text-sm font-semibold text-white">${formatRp(rev)}</div>

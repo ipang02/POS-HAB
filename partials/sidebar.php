@@ -59,6 +59,11 @@
       <span class="lbl">Analytics</span>
     </a>
 
+    <a class="nav-item" data-view="monthly-report" data-tip="Monthly Report" onclick="navigate('monthly-report')">
+      <i class="fa-solid fa-calendar-check nav-icon"></i>
+      <span class="lbl">Monthly Report</span>
+    </a>
+
     <a class="nav-item" data-view="inventory" data-tip="Inventory" onclick="navigate('inventory')">
       <i class="fa-solid fa-boxes-stacked nav-icon"></i>
       <span class="lbl">Inventory</span>
