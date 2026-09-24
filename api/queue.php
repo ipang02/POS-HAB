@@ -2,6 +2,7 @@
 require '../config.php';
 ini_set('display_errors', '0');
 error_reporting(0);
+mysqli_report(MYSQLI_REPORT_OFF);
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS');
