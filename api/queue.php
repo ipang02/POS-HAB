@@ -1,5 +1,7 @@
 <?php
 require '../config.php';
+ini_set('display_errors', '0');
+error_reporting(0);
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS');
@@ -36,7 +38,7 @@ if ($method === 'GET') {
     $result  = $stmt->get_result();
     $entries = [];
     while ($row = $result->fetch_assoc()) {
-        $row['pax_names'] = $row['pax_names'] ? json_decode($row['pax_names'], true) : null;
+        $row['pax_names'] = ($row['pax_names'] !== null && $row['pax_names'] !== '') ? json_decode($row['pax_names'], true) : null;
         $entries[] = $row;
     }
     echo json_encode(['ok' => true, 'entries' => $entries]);
@@ -71,7 +73,8 @@ if ($method === 'POST') {
         "INSERT INTO `queue` (branch_id, session_date, name, phone, party_size, pax_names) VALUES (?, ?, ?, ?, ?, ?)"
     );
     if (!$stmt) { http_response_code(500); echo json_encode(['ok' => false, 'error' => 'db_error']); exit; }
-    $stmt->bind_param('isssis', $branchId, $date, $name, $phone, $partySize, $paxNames);
+    $paxNamesBind = ($paxNames !== null) ? $paxNames : '';
+    $stmt->bind_param('isssis', $branchId, $date, $name, $phone, $partySize, $paxNamesBind);
     if (!$stmt->execute()) {
         http_response_code(500);
         echo json_encode(['ok' => false, 'error' => 'insert_failed']);
@@ -86,7 +89,7 @@ if ($method === 'POST') {
     $stmt2->bind_param('i', $newId);
     $stmt2->execute();
     $entry = $stmt2->get_result()->fetch_assoc();
-    if ($entry) $entry['pax_names'] = $entry['pax_names'] ? json_decode($entry['pax_names'], true) : null;
+    if ($entry) $entry['pax_names'] = ($entry['pax_names'] !== null && $entry['pax_names'] !== '') ? json_decode($entry['pax_names'], true) : null;
 
     echo json_encode(['ok' => true, 'entry' => $entry]);
     exit;
