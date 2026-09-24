@@ -643,18 +643,40 @@ if (!$conn->connect_error) {
     setTimeout(poll, 5000);
   }
 
+  // Expand each queue entry into individual pax rows
+  function expandEntries(entries) {
+    const rows = [];
+    entries.forEach(e => {
+      const extraNames = Array.isArray(e.pax_names) ? e.pax_names : [];
+      const total = Math.max(1, e.party_size || 1);
+      for (let i = 0; i < total; i++) {
+        rows.push({
+          ...e,
+          _name:    i === 0 ? e.name : (extraNames[i - 1] || `Guest ${i}`),
+          _paxIdx:  i,
+          _isFirst: i === 0,
+          _key:     `${e.id}-${i}`
+        });
+      }
+    });
+    return rows;
+  }
+
   // ── Render ────────────────────────────────────────────────
   function render(entries) {
     const list  = document.getElementById('q-list');
     const empty = document.getElementById('q-empty');
-    const waiting = entries.filter(e => e.status === 'waiting');
 
-    empty.classList.toggle('hidden', entries.length > 0);
-    list.classList.toggle('hidden', entries.length === 0);
+    const expanded       = expandEntries(entries);
+    const allWaiting     = expanded.filter(r => r.status === 'waiting');
+    const myEntry        = entries.find(e => parseInt(e.id, 10) === myId);
+    const myExpandedRows = expanded.filter(r => parseInt(r.id, 10) === myId);
 
-    // Update my position card
+    empty.classList.toggle('hidden', expanded.length > 0);
+    list.classList.toggle('hidden', expanded.length === 0);
+
+    // ── My position card ──────────────────────────────────
     const posCard = document.getElementById('pos-card');
-    const myEntry = entries.find(e => parseInt(e.id, 10) === myId);
 
     if (myId && myEntry) {
       posCard.classList.remove('hidden');
@@ -671,15 +693,29 @@ if (!$conn->connect_error) {
           if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
         }
       } else {
-        const myPos = waiting.findIndex(e => parseInt(e.id, 10) === myId) + 1;
+        // Find each group member's position in the expanded waiting list
+        const myWaitingRows = myExpandedRows.filter(r => r.status === 'waiting');
+        const firstPos = allWaiting.findIndex(r => r._key === myWaitingRows[0]?._key) + 1;
+        const ahead = firstPos - 1;
+
+        let membersHtml = '';
+        if (myWaitingRows.length > 1) {
+          membersHtml = `<div style="margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.35rem;justify-content:center">
+            ${myWaitingRows.map(r => {
+              const pos = allWaiting.findIndex(x => x._key === r._key) + 1;
+              return `<span style="font-size:.72rem;padding:.2rem .6rem;border-radius:2rem;background:rgba(255,255,255,.07);color:rgba(255,255,255,.5)">#${pos} ${esc(r._name)}</span>`;
+            }).join('')}
+          </div>`;
+        }
+
         posCard.className = 'pos-card';
         posCard.innerHTML = `
           <div class="pos-card-eyebrow">Your Position</div>
-          <div class="pos-num">#${myPos}</div>
-          <div class="pos-unit">${myPos === 1 ? "You're next!" : `${myPos - 1} ${myPos === 2 ? 'person' : 'people'} ahead`}</div>`;
+          <div class="pos-num">#${firstPos}</div>
+          <div class="pos-unit">${ahead === 0 ? "You're next!" : `${ahead} ${ahead === 1 ? 'person' : 'people'} ahead`}</div>
+          ${membersHtml}`;
       }
     } else if (myId && !myEntry) {
-      // Done or cleared — show completion, reset
       posCard.classList.remove('hidden');
       posCard.className = 'pos-card';
       posCard.innerHTML = `
@@ -698,52 +734,49 @@ if (!$conn->connect_error) {
       showFab();
     }
 
-    // Remove gone entries from DOM
-    const incoming = new Set(entries.map(e => String(e.id)));
+    // ── Queue list ────────────────────────────────────────
+    // Remove rows no longer in expanded list
+    const incomingKeys = new Set(expanded.map(r => r._key));
     [...list.querySelectorAll('.q-row')].forEach(el => {
-      if (!incoming.has(el.dataset.id)) collapse(el);
+      if (!incomingKeys.has(el.dataset.key)) collapse(el);
     });
 
-    // Add or update rows
-    entries.forEach((entry, i) => {
-      const existing = list.querySelector(`.q-row[data-id="${entry.id}"]`);
+    // Add or update expanded rows
+    expanded.forEach((r, i) => {
+      const existing = list.querySelector(`.q-row[data-key="${r._key}"]`);
       if (existing) {
         existing.querySelector('.q-pos-badge').textContent = `#${i + 1}`;
-        if (!existing.classList.contains('is-serving') && entry.status === 'serving') {
+        if (!existing.classList.contains('is-serving') && r.status === 'serving') {
           existing.classList.add('is-serving');
           existing.classList.remove('is-mine');
           const badge = existing.querySelector('.q-status-badge');
           if (badge) { badge.textContent = 'In Chair'; badge.className = 'q-status-badge serving'; }
         }
       } else {
-        list.appendChild(buildRow(entry, i));
+        list.appendChild(buildRow(r, i));
       }
     });
   }
 
-  function buildRow(entry, pos) {
-    const isMine    = myId && parseInt(entry.id, 10) === myId;
-    const isServing = entry.status === 'serving';
-    const extraPax  = entry.pax_names?.length || (entry.party_size > 1 ? entry.party_size - 1 : 0);
-    const partyTxt  = extraPax > 0 ? `+${extraPax}` : '';
-    const phoneMask = '****' + String(entry.phone || '').slice(-4);
+  function buildRow(r, pos) {
+    const isMine    = myId && parseInt(r.id, 10) === myId;
+    const isServing = r.status === 'serving';
+    const phoneMask = r._isFirst ? '****' + String(r.phone || '').slice(-4) : null;
 
     const div = document.createElement('div');
-    div.dataset.id = String(entry.id);
-    div.className  = 'q-row' + (isServing ? ' is-serving' : isMine ? ' is-mine' : '');
+    div.dataset.key = r._key;
+    div.className   = 'q-row' + (isServing ? ' is-serving' : isMine ? ' is-mine' : '');
 
     div.innerHTML = `
       <div class="q-pos-badge">#${pos + 1}</div>
       <div class="q-info">
         <div class="q-name-row">
-          <span class="q-name">${esc(entry.name)}</span>
-          ${partyTxt ? `<span class="q-party-lbl"><i class="fa-solid fa-users" style="font-size:.65rem;margin-right:.2rem"></i>${esc(partyTxt)}</span>` : ''}
+          <span class="q-name">${esc(r._name)}</span>
           ${isMine ? `<span class="q-you-badge"><i class="fa-solid fa-circle-dot" style="font-size:.6rem;margin-right:.2rem"></i>You</span>` : ''}
         </div>
-        <div class="q-phone">
-          <i class="fa-solid fa-phone" style="font-size:.65rem;opacity:.5"></i>
-          ${esc(phoneMask)}
-        </div>
+        ${!r._isFirst
+          ? `<div class="q-phone" style="opacity:.55"><i class="fa-solid fa-user-group" style="font-size:.6rem;opacity:.5"></i> with ${esc(r.name)}</div>`
+          : phoneMask ? `<div class="q-phone"><i class="fa-solid fa-phone" style="font-size:.65rem;opacity:.5"></i> ${esc(phoneMask)}</div>` : ''}
       </div>
       <span class="q-status-badge ${isServing ? 'serving' : 'waiting'}">
         ${isServing ? 'In Chair' : 'Waiting'}

@@ -372,7 +372,7 @@ if (!$conn->connect_error) {
       <div class="tv-queue-header">
         <span class="tv-section-label">Queue</span>
         <span class="tv-queue-count-num" id="tv-count">0</span>
-        <span class="tv-queue-count-lbl" id="tv-count-lbl">waiting</span>
+        <span class="tv-queue-count-lbl" id="tv-count-lbl">people waiting</span>
       </div>
 
       <div class="tv-scroll-wrap" id="tv-scroll-wrap">
@@ -458,27 +458,56 @@ if (!$conn->connect_error) {
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  // Expand each queue entry into individual pax rows
+  function expandEntries(entries) {
+    const rows = [];
+    entries.forEach(e => {
+      const extraNames = Array.isArray(e.pax_names) ? e.pax_names : [];
+      const total = Math.max(1, e.party_size || 1);
+      for (let i = 0; i < total; i++) {
+        rows.push({
+          ...e,
+          _name:    i === 0 ? e.name : (extraNames[i - 1] || `Guest ${i}`),
+          _paxIdx:  i,
+          _isFirst: i === 0
+        });
+      }
+    });
+    return rows;
+  }
+
   // ── Render ───────────────────────────────────────────────────
   function render(entries) {
     detectSound(entries);
 
-    const waiting = entries.filter(e => e.status === 'waiting');
-    const serving = entries.filter(e => e.status === 'serving');
+    const expanded = expandEntries(entries);
+    const waiting  = expanded.filter(r => r.status === 'waiting');
+    const servingEntry = entries.find(e => e.status === 'serving');
 
-    document.getElementById('tv-count').textContent = waiting.length;
+    document.getElementById('tv-count').textContent     = waiting.length;
+    document.getElementById('tv-count-lbl').textContent = waiting.length === 1 ? 'person waiting' : 'people waiting';
 
+    // Now Serving panel
     const slot = document.getElementById('tv-serving-slot');
-    if (serving.length) {
-      const s = serving[0];
+    if (servingEntry) {
+      const extraNames = Array.isArray(servingEntry.pax_names) ? servingEntry.pax_names : [];
+      const total = Math.max(1, servingEntry.party_size || 1);
+      const members = [servingEntry.name];
+      for (let i = 1; i < total; i++) members.push(extraNames[i - 1] || `Guest ${i}`);
+
+      const membersHtml = members.length > 1
+        ? `<div class="tv-serving-party">
+             ${members.slice(1).map(n => `<span style="display:inline-block;margin:.15rem .3rem;padding:.2rem .65rem;border-radius:2rem;background:rgba(201,168,76,.12);font-size:.78rem;color:rgba(201,168,76,.8)">${esc(n)}</span>`).join('')}
+           </div>`
+        : '';
+
       slot.innerHTML = `
         <div class="tv-serving-card">
           <div class="tv-serving-tag">
             <i class="fa-solid fa-scissors"></i> In Chair
           </div>
-          <div class="tv-serving-name">${esc(s.name)}</div>
-          ${s.party_size > 1
-            ? `<div class="tv-serving-party"><i class="fa-solid fa-users" style="margin-right:.4rem;opacity:.5"></i>Group of ${esc(s.party_size)}</div>`
-            : ''}
+          <div class="tv-serving-name">${esc(servingEntry.name)}</div>
+          ${membersHtml}
         </div>`;
     } else {
       slot.innerHTML = `
@@ -501,14 +530,12 @@ if (!$conn->connect_error) {
 
     emptyEl.classList.add('hidden');
 
-    const rowsHtml = waiting.map((e, i) => `
+    const rowsHtml = waiting.map((r, i) => `
       <div class="tv-row">
         <div class="tv-row-pos">#${i + 1}</div>
         <div class="tv-row-info">
-          <div class="tv-row-name">${esc(e.name)}</div>
-          ${e.party_size > 1
-            ? `<div class="tv-row-sub"><i class="fa-solid fa-users" style="margin-right:.35rem;opacity:.45"></i>Group of ${esc(e.party_size)}</div>`
-            : ''}
+          <div class="tv-row-name">${esc(r._name)}</div>
+          ${!r._isFirst ? `<div class="tv-row-sub"><i class="fa-solid fa-user-group" style="margin-right:.35rem;opacity:.45"></i>with ${esc(r.name)}</div>` : ''}
         </div>
         <span class="tv-row-badge">
           <i class="fa-regular fa-clock" style="margin-right:.35rem"></i>Waiting
